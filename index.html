@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ma Boîte Mail</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:#F7F6F3;height:100vh;overflow:hidden;font-size:13px}
+.app{display:flex;height:100vh}
+.sb{width:280px;background:#fff;display:flex;flex-direction:column;border-right:1px solid #EBEBEB;flex-shrink:0}
+.sb-top{padding:16px 14px 10px}
+.sb-title{font-size:17px;font-weight:700;color:#1C1C1E;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.nbtn{background:#5B5FEF;color:#fff;border:none;border-radius:9px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer}
+.srch{width:100%;padding:7px 10px;border-radius:9px;border:1px solid #EBEBEB;background:#F7F6F3;font-size:12px;outline:none;color:#1C1C1E}
+.tlist{flex:1;overflow-y:auto}
+.ti{display:flex;gap:8px;padding:10px 12px;cursor:pointer;border-left:3px solid transparent;transition:background .12s}
+.ti:hover{background:#F5F4F0}
+.ti.on{background:#EEEFFE;border-left-color:#5B5FEF}
+.av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.ti-info{flex:1;min-width:0}
+.ti-name{font-size:12px;font-weight:500;color:#1C1C1E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ti-name.u{font-weight:700}
+.ti-subj{font-size:11px;color:#8A8A8E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ti-subj.u{color:#5B5FEF;font-weight:600}
+.ti-snip{font-size:10px;color:#ABABAB;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.ti-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.ti-time{font-size:10px;color:#ABABAB}
+.udot{width:6px;height:6px;border-radius:50%;background:#5B5FEF}
+.auth-zone{padding:10px 14px;border-top:1px solid #EBEBEB}
+.auth-btn{width:100%;background:#5B5FEF;color:#fff;border:none;border-radius:9px;padding:9px;font-size:12px;font-weight:600;cursor:pointer;margin-bottom:8px}
+.token-hint{font-size:10px;color:#8A8A8E;line-height:1.5;margin-bottom:6px}
+.token-input{width:100%;padding:7px 10px;border-radius:8px;border:1px solid #EBEBEB;background:#F7F6F3;font-size:11px;outline:none;color:#1C1C1E;margin-bottom:6px}
+.token-btn{width:100%;background:#34C68A;color:#fff;border:none;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer}
+.connected{font-size:11px;color:#34C68A;font-weight:600;display:flex;align-items:center;gap:6px}
+.refresh-btn{background:none;border:1px solid #EBEBEB;color:#5B5FEF;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.mh{padding:13px 20px;background:#fff;border-bottom:1px solid #EBEBEB;display:flex;justify-content:space-between;align-items:center}
+.mh-title{font-size:14px;font-weight:700;color:#1C1C1E;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:420px}
+.mh-sub{font-size:10px;color:#8A8A8E;margin-top:2px}
+.sum-btn{background:#EEEFFE;color:#5B5FEF;border:none;border-radius:9px;padding:6px 13px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0;margin-left:10px}
+.sum-box{margin:10px 20px 0;padding:10px 14px;background:#F0EFFF;border-radius:10px;font-size:11.5px;color:#4A4A8A;line-height:1.65;position:relative;display:none}
+.sum-box.vis{display:block}
+.sum-lbl{font-size:9px;color:#5B5FEF;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:4px}
+.sum-x{position:absolute;top:8px;right:12px;background:none;border:none;color:#8A8A8E;cursor:pointer;font-size:14px}
+.msgs{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.bw{display:flex;flex-direction:column}
+.bw.mine{align-items:flex-end}
+.bw.theirs{align-items:flex-start}
+.srow{display:flex;align-items:center;gap:5px;margin-bottom:4px}
+.mav{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff}
+.sname{font-size:10.5px;color:#8A8A8E}
+.bub{max-width:65%;padding:10px 13px;font-size:13px;line-height:1.55;word-break:break-word;white-space:pre-wrap}
+.bub.mine{background:#5B5FEF;color:#fff;border-radius:16px 16px 4px 16px}
+.bub.theirs{background:#F0F0F0;color:#1C1C1E;border-radius:16px 16px 16px 4px}
+.btime{font-size:10px;color:#ABABAB;margin-top:3px}
+.rbar{padding:10px 20px 14px;background:#fff;border-top:1px solid #EBEBEB}
+.rrow{display:flex;gap:8px;align-items:flex-end}
+.rinput{flex:1;resize:none;padding:9px 13px;border-radius:13px;border:1px solid #EBEBEB;background:#F7F6F3;font-size:13px;color:#1C1C1E;outline:none;min-height:42px;max-height:110px;line-height:1.5;font-family:inherit}
+.send-btn{background:#5B5FEF;color:#fff;border:none;border-radius:11px;width:40px;height:40px;font-size:17px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.send-btn:disabled{opacity:.4;cursor:default}
+.st{height:16px;margin-top:4px;font-size:11px}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#8A8A8E;gap:8px}
+.compose-wrap{flex:1;padding:20px;display:flex;flex-direction:column;gap:10px}
+.inp{width:100%;padding:10px 14px;border-radius:10px;border:1px solid #EBEBEB;background:#F7F6F3;font-size:13px;color:#1C1C1E;outline:none;font-family:inherit}
+.loading{padding:40px;text-align:center;color:#8A8A8E;font-size:13px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sb">
+    <div class="sb-top">
+      <div class="sb-title">Boîte mail <button class="nbtn" id="newBtn">+ Nouveau</button></div>
+      <input class="srch" id="search" placeholder="Rechercher…">
+    </div>
+    <div class="tlist" id="tlist"><div class="loading">Connectez votre Gmail →</div></div>
+    <div class="auth-zone" id="authZone">
+      <button class="auth-btn" id="authBtn">🔗 Connecter mon Gmail</button>
+      <div id="tokenZone" style="display:none">
+        <div class="token-hint">Une page Google s'est ouverte.<br>Après connexion, copiez la valeur <strong>access_token=…</strong> depuis l'URL et collez-la ici :</div>
+        <input class="token-input" id="tokenInput" placeholder="Collez votre access_token ici">
+        <button class="token-btn" id="tokenBtn">✓ Valider</button>
+      </div>
+      <div id="connectedZone" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="connected">● Gmail connecté</span>
+          <button class="refresh-btn" id="refreshBtn">↻ Actualiser</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main" id="main">
+    <div class="empty" id="emptyState">
+      <div style="font-size:38px">✉️</div>
+      <div style="font-size:14px;font-weight:500">Sélectionnez une conversation</div>
+      <div style="font-size:12px;margin-top:4px">Connectez votre Gmail pour accéder à vos emails</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CLIENT_ID = "503752573647-0mo2us3ukmg3dbnuvj9mc3db6bdlk029.apps.googleusercontent.com";
+const SCOPES = "https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly";
+const REDIRECT = "https://0rakless.github.io/Ma-boite-mail/";
+
+const P=["#7C6BDE","#4FABD6","#56C4A8","#E07B6A","#C46BBF","#D4A843","#5D8EE0"];
+const hue=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%P.length;return P[h]};
+const ini=n=>n.split(/\s+/).slice(0,2).map(w=>w[0]?.toUpperCase()||"").join("");
+const tl=iso=>{if(!iso)return"";const d=new Date(iso),now=new Date(),s=(now-d)/1000;if(s<3600)return`${Math.floor(s/60)}m`;if(s<86400)return d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});if(s<604800)return d.toLocaleDateString("fr-FR",{weekday:"short"});return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"short"})};
+
+let token=null, threads=[], sel=null, allMsgs=[];
+
+// Check if redirected back with token
+const hash = new URLSearchParams(window.location.hash.slice(1));
+if (hash.get("access_token")) {
+  token = hash.get("access_token");
+  window.history.replaceState({}, document.title, window.location.pathname);
+  showConnected();
+  loadThreads();
+}
+
+function showConnected() {
+  document.getElementById("authBtn").style.display="none";
+  document.getElementById("tokenZone").style.display="none";
+  document.getElementById("connectedZone").style.display="block";
+}
+
+document.getElementById("authBtn").onclick = () => {
+  const params = new URLSearchParams({
+    client_id: CLIENT_ID,
+    redirect_uri: REDIRECT,
+    response_type: "token",
+    scope: SCOPES,
+    prompt: "consent",
+  });
+  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+};
+
+document.getElementById("refreshBtn").onclick = loadThreads;
+document.getElementById("newBtn").onclick = showCompose;
+document.getElementById("search").oninput = e => renderList(e.target.value.toLowerCase());
+
+// ── Gmail API ──
+async function gFetch(path, opts={}) {
+  const r = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/${path}`, {
+    ...opts, headers:{ Authorization:`Bearer ${token}`, "Content-Type":"application/json", ...opts.headers }
+  });
+  return r.json();
+}
+
+function makeRaw({to, subject, body, replyToMessageId}) {
+  const lines=[`To: ${to}`,`Subject: =?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`,"Content-Type: text/plain; charset=utf-8","MIME-Version: 1.0","",body];
+  if(replyToMessageId) lines.splice(2,0,`In-Reply-To: ${replyToMessageId}`,`References: ${replyToMessageId}`);
+  return btoa(unescape(encodeURIComponent(lines.join("\r\n")))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+
+async function loadThreads() {
+  document.getElementById("tlist").innerHTML='<div class="loading">Chargement…</div>';
+  try {
+    const data = await gFetch("threads?maxResults=25&labelIds=INBOX");
+    if (!data.threads) { document.getElementById("tlist").innerHTML='<div class="loading">Aucun email trouvé</div>'; return; }
+    const details = await Promise.all(data.threads.map(t => gFetch(`threads/${t.id}?format=METADATA&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`)));
+    threads = details.map(t => {
+      const first=t.messages?.[0], last=t.messages?.[t.messages.length-1];
+      const get=(msg,n)=>(msg?.payload?.headers||[]).find(h=>h.name.toLowerCase()===n)?.value||"";
+      const from=get(first,"from"), nm=from.match(/^(.+?)\s*</), em=from.match(/<(.+?)>/);
+      return { id:t.id, threadId:t.id, name:nm?nm[1].replace(/"/g,"").trim():from, email:em?em[1]:from,
+        subj:get(first,"subject")||"(sans objet)", snip:last?.snippet||"",
+        time:new Date(parseInt(last?.internalDate||Date.now())).toISOString(),
+        unread:(last?.labelIds||[]).includes("UNREAD"), lastId:last?.id };
+    });
+    renderList();
+  } catch(e) { document.getElementById("tlist").innerHTML='<div class="loading">Erreur de chargement</div>'; }
+}
+
+function renderList(q="") {
+  const list = document.getElementById("tlist"); list.innerHTML="";
+  const visible = threads.filter(t => !q||[t.subj,t.name,t.snip].some(s=>(s||"").toLowerCase().includes(q)));
+  visible.forEach(t => {
+    const el=document.createElement("div");
+    el.className="ti"+(sel?.id===t.id?" on":"");
+    const c=hue(t.name);
+    el.innerHTML=`<div class="av" style="background:${c}">${ini(t.name)}</div>
+    <div class="ti-info">
+      <div class="ti-name${t.unread?" u":""}">${t.name}</div>
+      <div class="ti-subj${t.unread?" u":""}">${t.subj}</div>
+      <div class="ti-snip">${t.snip}</div>
+    </div>
+    <div class="ti-meta">
+      <div class="ti-time">${tl(t.time)}</div>
+      ${t.unread?'<div class="udot"></div>':""}
+    </div>`;
+    el.onclick=()=>openThread(t);
+    list.appendChild(el);
+  });
+}
+
+async function openThread(t) {
+  sel=t; t.unread=false; renderList(document.getElementById("search").value.toLowerCase());
+  const main=document.getElementById("main"), c=hue(t.name);
+  main.innerHTML=`
+  <div class="mh">
+    <div><div class="mh-title">${t.subj}</div><div class="mh-sub">${t.name} · ${t.email}</div></div>
+    <button class="sum-btn" id="sumBtn">✦ Résumer</button>
+  </div>
+  <div class="sum-box" id="sumBox"><div class="sum-lbl">Résumé IA</div><div id="sumTxt"></div><button class="sum-x" id="sumX">×</button></div>
+  <div class="msgs" id="msgs"><div class="loading">Chargement…</div></div>
+  <div class="rbar">
+    <div class="rrow">
+      <textarea class="rinput" id="ri" placeholder="Répondre à ${t.name}… (Entrée pour envoyer)" rows="1"></textarea>
+      <button class="send-btn" id="sendBtn">↑</button>
+    </div>
+    <div class="st" id="st"></div>
+  </div>`;
+
+  document.getElementById("sumX").onclick=()=>document.getElementById("sumBox").classList.remove("vis");
+  document.getElementById("sumBtn").onclick=()=>summarise(t);
+  document.getElementById("sendBtn").onclick=()=>sendReply(t);
+  document.getElementById("ri").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendReply(t);}};
+
+  try {
+    const data = await gFetch(`threads/${t.id}?format=FULL`);
+    allMsgs = (data.messages||[]).map(msg => {
+      const get=n=>(msg.payload?.headers||[]).find(h=>h.name.toLowerCase()===n)?.value||"";
+      const from=get("from"), nm=from.match(/^(.+?)\s*</);
+      const isMe=(msg.labelIds||[]).includes("SENT");
+      function getBody(p){
+        if(!p)return"";
+        if(p.body?.data)try{return decodeURIComponent(escape(atob(p.body.data.replace(/-/g,"+").replace(/_/g,"/"))));}catch{return"";}
+        if(p.parts){for(const x of p.parts){if(x.mimeType==="text/plain"&&x.body?.data)try{return decodeURIComponent(escape(atob(x.body.data.replace(/-/g,"+").replace(/_/g,"/"))));}catch{}}for(const x of p.parts){const b=getBody(x);if(b)return b;}}
+        return msg.snippet||"";
+      }
+      return {messageId:msg.id,mine:isMe,name:nm?nm[1].replace(/"/g,"").trim():from,body:getBody(msg.payload).slice(0,800),t:new Date(parseInt(msg.internalDate||Date.now())).toISOString()};
+    });
+    renderMsgs(c);
+  } catch(e) { document.getElementById("msgs").innerHTML='<div class="loading">Erreur</div>'; }
+}
+
+function renderMsgs(c) {
+  const container=document.getElementById("msgs"); if(!container)return;
+  container.innerHTML="";
+  allMsgs.forEach(m=>{
+    const w=document.createElement("div");
+    w.className="bw "+(m.mine?"mine":"theirs");
+    if(!m.mine)w.innerHTML=`<div class="srow"><div class="mav" style="background:${c}">${ini(m.name)}</div><span class="sname">${m.name}</span></div>`;
+    w.innerHTML+=`<div class="bub ${m.mine?"mine":"theirs"}">${m.body}</div><div class="btime">${tl(m.t)}</div>`;
+    container.appendChild(w);
+  });
+  container.scrollTop=9999;
+}
+
+async function sendReply(t) {
+  const inp=document.getElementById("ri"), val=inp.value.trim(), st=document.getElementById("st");
+  if(!val)return;
+  document.getElementById("sendBtn").disabled=true; st.innerHTML="";
+  const last=allMsgs[allMsgs.length-1];
+  try {
+    const raw=makeRaw({to:t.email,subject:`Re: ${t.subj}`,body:val,replyToMessageId:last?.messageId});
+    const payload={raw}; if(t.threadId)payload.threadId=t.threadId;
+    const res=await gFetch("messages/send",{method:"POST",body:JSON.stringify(payload)});
+    if(res.id){
+      st.innerHTML='<span style="color:#34C68A">✓ Email envoyé !</span>';
+      allMsgs.push({mine:true,name:"Moi",body:val,t:new Date().toISOString()});
+      inp.value=""; renderMsgs(hue(t.name));
+    } else { st.innerHTML='<span style="color:#E05C5C">✗ Erreur d\'envoi</span>'; }
+  } catch(e) { st.innerHTML='<span style="color:#E05C5C">✗ Erreur réseau</span>'; }
+  document.getElementById("sendBtn").disabled=false;
+}
+
+async function summarise(t) {
+  const convo=allMsgs.map(m=>`${m.name}: ${m.body}`).join("\n\n");
+  document.getElementById("sumTxt").textContent="Génération du résumé…";
+  document.getElementById("sumBox").classList.add("vis");
+  try {
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:300,system:"Résume en 2-3 phrases en français, de façon concise.",messages:[{role:"user",content:`Résume:\n\n${convo}`}]})});
+    const d=await r.json();
+    document.getElementById("sumTxt").textContent=d.content?.filter(b=>b.type==="text").map(b=>b.text).join("")||"Résumé indisponible.";
+  } catch { document.getElementById("sumTxt").textContent="Résumé indisponible."; }
+}
+
+function showCompose() {
+  sel=null; renderList(document.getElementById("search").value.toLowerCase());
+  const main=document.getElementById("main");
+  main.innerHTML=`
+  <div class="mh"><div class="mh-title">Nouveau message</div><button onclick="document.getElementById('main').innerHTML='<div class=empty><div style=font-size:38px>✉️</div><div>Sélectionnez une conversation</div></div>'" style="background:none;border:none;color:#8A8A8E;font-size:20px;cursor:pointer">×</button></div>
+  <div class="compose-wrap">
+    <input class="inp" id="cTo" placeholder="À (adresse email)">
+    <input class="inp" id="cSubj" placeholder="Objet">
+    <textarea class="inp" id="cBody" placeholder="Votre message…" style="flex:1;resize:none;padding-top:12px"></textarea>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="st" id="cSt"></div>
+      <button onclick="sendNew()" style="background:#5B5FEF;color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer">Envoyer ↑</button>
+    </div>
+  </div>`;
+}
+
+async function sendNew() {
+  const to=document.getElementById("cTo").value.trim(),
+        subj=document.getElementById("cSubj").value.trim()||"(sans objet)",
+        body=document.getElementById("cBody").value.trim(),
+        st=document.getElementById("cSt");
+  if(!to||!body)return;
+  st.innerHTML="Envoi…";
+  try {
+    const raw=makeRaw({to,subject:subj,body});
+    const res=await gFetch("messages/send",{method:"POST",body:JSON.stringify({raw})});
+    if(res.id){st.innerHTML='<span style="color:#34C68A">✓ Envoyé !</span>';document.getElementById("cBody").value="";}
+    else st.innerHTML='<span style="color:#E05C5C">✗ Erreur</span>';
+  } catch { st.innerHTML='<span style="color:#E05C5C">✗ Erreur réseau</span>'; }
+}
+</script>
+</body>
+</html>
