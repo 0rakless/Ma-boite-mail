@@ -234,7 +234,20 @@ async function openThread(t){
         if(p.parts){for(const x of p.parts){if(x.mimeType==="text/plain"&&x.body?.data)try{return decodeURIComponent(escape(atob(x.body.data.replace(/-/g,"+").replace(/_/g,"/"))));}catch{}}for(const x of p.parts){const b=getBody(x);if(b)return b;}}
         return msg.snippet||"";
       }
-      return{messageId:msg.id,mine:isMe,name:nm?nm[1].replace(/"/g,"").trim():from,body:getBody(msg.payload).slice(0,1000),t:new Date(parseInt(msg.internalDate||Date.now())).toISOString()};
+      function cleanBody(txt){
+        // Remove HTML tags
+        txt=txt.replace(/<[^>]*>/g," ");
+        // Decode HTML entities
+        const el=document.createElement("div");el.innerHTML=txt;txt=el.textContent||el.innerText||"";
+        // Remove quoted reply lines (lines starting with >)
+        txt=txt.split("\n").filter(l=>!l.trim().startsWith(">")).join("\n");
+        // Remove "On ... wrote:" lines
+        txt=txt.replace(/Le .+? a écrit\s*:/gi,"").replace(/On .+? wrote\s*:/gi,"");
+        // Collapse multiple blank lines
+        txt=txt.replace(/\n{3,}/g,"\n\n").trim();
+        return txt;
+      }
+      return{messageId:msg.id,mine:isMe,name:nm?nm[1].replace(/"/g,"").trim():from,body:cleanBody(getBody(msg.payload)).slice(0,1000),t:new Date(parseInt(msg.internalDate||Date.now())).toISOString()};
     });
     renderMsgs(c);
   }catch(e){document.getElementById("msgs").innerHTML='<div class="loading">Erreur de chargement</div>';}
