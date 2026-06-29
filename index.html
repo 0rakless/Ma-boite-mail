@@ -363,11 +363,16 @@ async function loadMoreSearch(){
 // LABELS
 function renderLabels(){
   const el=document.getElementById("labelsList");el.innerHTML="";
+  const PROTECTED=["unread","urgent"];
   labels.forEach(l=>{
     const cnt=(Object.entries(threadLabels).filter(([,v])=>v.includes(l.id))).length;
     const div=document.createElement("div");
     div.className="label-item";div.dataset.id=l.id;
-    div.innerHTML=`<div class="label-dot" style="background:${l.color}"></div><span>${esc(l.name)}</span>${cnt?`<span class="label-count">${cnt}</span>`:""}`;
+    div.style.cssText="display:flex;align-items:center;gap:7px;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:12px;color:#444;position:relative";
+    const canDelete=!PROTECTED.includes(l.id);
+    div.innerHTML=`<div class="label-dot" style="background:${l.color}"></div><span style="flex:1">${esc(l.name)}</span>${cnt?`<span class="label-count">${cnt}</span>`:""}${canDelete?`<button onclick="event.stopPropagation();deleteLabel('${l.id}')" title="Supprimer" style="background:none;border:none;cursor:pointer;color:#ABABAB;padding:0 2px;font-size:15px;line-height:1;display:none" class="del-lbl">×</button>`:""}`;
+    div.onmouseenter=()=>{const b=div.querySelector(".del-lbl");if(b)b.style.display="block";};
+    div.onmouseleave=()=>{const b=div.querySelector(".del-lbl");if(b)b.style.display="none";};
     div.onclick=()=>{
       const wasOn=div.classList.contains("on");
       document.querySelectorAll(".label-item").forEach(x=>x.classList.remove("on"));
@@ -380,6 +385,12 @@ function renderLabels(){
 renderLabels();
 
 function saveLabels(){localStorage.setItem("mailLabels",JSON.stringify(labels));localStorage.setItem("threadLabels",JSON.stringify(threadLabels));}
+
+function deleteLabel(id){
+  labels=labels.filter(l=>l.id!==id);
+  Object.keys(threadLabels).forEach(tid=>{threadLabels[tid]=(threadLabels[tid]||[]).filter(x=>x!==id);});
+  saveLabels();renderLabels();renderList();
+}
 
 function showAddLabel(){
   let selColor=COLORS[0];
