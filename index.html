@@ -8,16 +8,44 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:#F7F6F3;height:100vh;overflow:hidden;font-size:13px}
 .app{display:flex;height:100vh}
-.sb{width:280px;background:#fff;display:flex;flex-direction:column;border-right:1px solid #EBEBEB;flex-shrink:0}
-.sb-top{padding:16px 14px 10px}
-.sb-title{font-size:17px;font-weight:700;color:#1C1C1E;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
-.nbtn{background:#5B5FEF;color:#fff;border:none;border-radius:9px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer}
-.srch{width:100%;padding:7px 10px;border-radius:9px;border:1px solid #EBEBEB;background:#F7F6F3;font-size:12px;outline:none;color:#1C1C1E}
+
+/* SIDEBAR */
+.sb{width:260px;min-width:160px;max-width:460px;background:#fff;display:flex;flex-direction:column;border-right:1px solid #EBEBEB;flex-shrink:0;position:relative}
+.resize-handle{position:absolute;right:-4px;top:0;bottom:0;width:8px;cursor:col-resize;z-index:10;display:flex;align-items:center;justify-content:center}
+.resize-handle:hover .resize-bar,.resize-handle.dragging .resize-bar{background:#5B5FEF}
+.resize-bar{width:3px;height:48px;border-radius:3px;background:#DDDCDC;transition:background .15s}
+.sb-top{padding:14px 12px 8px}
+.sb-title{font-size:16px;font-weight:700;color:#1C1C1E;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.nbtn{background:#5B5FEF;color:#fff;border:none;border-radius:8px;padding:5px 11px;font-size:11px;font-weight:600;cursor:pointer}
+.srch-wrap{position:relative;margin-bottom:4px}
+.srch{width:100%;padding:7px 10px 7px 30px;border-radius:8px;border:1px solid #EBEBEB;background:#F7F6F3;font-size:12px;outline:none;color:#1C1C1E}
+.srch-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#ABABAB;font-size:13px;pointer-events:none}
+.srch-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:#ABABAB;cursor:pointer;font-size:14px;display:none}
+
+/* FOLDERS */
+.folders{padding:6px 8px;border-bottom:1px solid #EBEBEB}
+.folder{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:7px;cursor:pointer;font-size:12px;color:#444;font-weight:500}
+.folder:hover{background:#F5F4F0}
+.folder.on{background:#EEEFFE;color:#5B5FEF;font-weight:600}
+.folder-icon{font-size:14px;width:16px;text-align:center}
+.folder-count{margin-left:auto;font-size:10px;background:#5B5FEF;color:#fff;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}
+
+/* LABELS */
+.labels-section{padding:6px 8px;border-bottom:1px solid #EBEBEB}
+.labels-title{font-size:10px;color:#ABABAB;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:4px 8px;display:flex;justify-content:space-between;align-items:center}
+.label-add{background:none;border:none;color:#5B5FEF;cursor:pointer;font-size:16px;line-height:1}
+.label-item{display:flex;align-items:center;gap:7px;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:12px;color:#444}
+.label-item:hover{background:#F5F4F0}
+.label-item.on{background:#F5F4F0;font-weight:600}
+.label-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.label-count{margin-left:auto;font-size:10px;color:#ABABAB}
+
+/* THREAD LIST */
 .tlist{flex:1;overflow-y:auto}
-.ti{display:flex;gap:8px;padding:10px 12px;cursor:pointer;border-left:3px solid transparent;transition:background .12s}
+.ti{display:flex;gap:8px;padding:9px 12px;cursor:pointer;border-left:3px solid transparent;transition:background .1s}
 .ti:hover{background:#F5F4F0}
 .ti.on{background:#EEEFFE;border-left-color:#5B5FEF}
-.av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
 .ti-info{flex:1;min-width:0}
 .ti-name{font-size:12px;font-weight:500;color:#1C1C1E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ti-name.u{font-weight:700}
@@ -27,23 +55,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;ba
 .ti-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
 .ti-time{font-size:10px;color:#ABABAB}
 .udot{width:6px;height:6px;border-radius:50%;background:#5B5FEF}
+.ti-labels{display:flex;gap:3px;flex-wrap:wrap;margin-top:2px}
+.ti-label{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:600}
 .load-more{text-align:center;padding:10px;font-size:11px;color:#5B5FEF;cursor:pointer;font-weight:600}
-.load-more:hover{background:#F5F4F0}
-.auth-zone{padding:10px 14px;border-top:1px solid #EBEBEB}
-.auth-btn{width:100%;background:#5B5FEF;color:#fff;border:none;border-radius:9px;padding:9px;font-size:12px;font-weight:600;cursor:pointer}
+.load-more:hover{text-decoration:underline}
+
+/* AUTH */
+.auth-zone{padding:10px 12px;border-top:1px solid #EBEBEB}
+.auth-btn{width:100%;background:#5B5FEF;color:#fff;border:none;border-radius:8px;padding:8px;font-size:12px;font-weight:600;cursor:pointer}
 .connected{font-size:11px;color:#34C68A;font-weight:600;display:flex;align-items:center;gap:6px}
-.refresh-btn{background:none;border:1px solid #EBEBEB;color:#5B5FEF;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer}
+.refresh-btn{background:none;border:1px solid #EBEBEB;color:#5B5FEF;border-radius:7px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer}
+
+/* MAIN */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.mh{padding:13px 20px;background:#fff;border-bottom:1px solid #EBEBEB;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.mh{padding:12px 20px;background:#fff;border-bottom:1px solid #EBEBEB;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;gap:10px}
 .mh-left{min-width:0;flex:1}
 .mh-title{font-size:14px;font-weight:700;color:#1C1C1E;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mh-sub{font-size:10px;color:#8A8A8E;margin-top:2px}
-.sum-btn{background:#EEEFFE;color:#5B5FEF;border:none;border-radius:9px;padding:6px 13px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0;margin-left:10px;white-space:nowrap}
-.sum-box{margin:10px 20px 0;padding:10px 14px;background:#F0EFFF;border-radius:10px;font-size:11.5px;color:#4A4A8A;line-height:1.65;position:relative;display:none;flex-shrink:0}
+.mh-actions{display:flex;gap:6px;flex-shrink:0}
+.sum-btn{background:#EEEFFE;color:#5B5FEF;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.label-btn{background:#F5F4F0;color:#444;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.sum-box{margin:8px 20px 0;padding:10px 14px;background:#F0EFFF;border-radius:10px;font-size:11.5px;color:#4A4A8A;line-height:1.65;position:relative;display:none;flex-shrink:0}
 .sum-box.vis{display:block}
 .sum-lbl{font-size:9px;color:#5B5FEF;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:4px}
 .sum-x{position:absolute;top:8px;right:12px;background:none;border:none;color:#8A8A8E;cursor:pointer;font-size:14px}
-.msgs{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.msgs{flex:1;overflow-y:auto;padding:14px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
 .bw{display:flex;flex-direction:column;width:100%}
 .bw.mine{align-items:flex-end}
 .bw.theirs{align-items:flex-start}
@@ -54,36 +90,76 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;ba
 .bub.mine{background:#5B5FEF;color:#fff;border-radius:16px 16px 4px 16px}
 .bub.theirs{background:#F0F0F0;color:#1C1C1E;border-radius:16px 16px 16px 4px}
 .btime{font-size:10px;color:#ABABAB;margin-top:4px}
-.rbar{padding:10px 20px 14px;background:#fff;border-top:1px solid #EBEBEB;flex-shrink:0}
+.rbar{padding:10px 20px 12px;background:#fff;border-top:1px solid #EBEBEB;flex-shrink:0}
 .rrow{display:flex;gap:8px;align-items:flex-end}
-.rinput{flex:1;resize:none;padding:9px 13px;border-radius:13px;border:1px solid #EBEBEB;background:#F7F6F3;font-size:13px;color:#1C1C1E;outline:none;min-height:42px;max-height:110px;line-height:1.5;font-family:inherit}
+.rinput{flex:1;resize:none;padding:9px 13px;border-radius:12px;border:1px solid #EBEBEB;background:#F7F6F3;font-size:13px;color:#1C1C1E;outline:none;min-height:42px;max-height:110px;line-height:1.5;font-family:inherit}
 .send-btn{background:#5B5FEF;color:#fff;border:none;border-radius:11px;width:40px;height:40px;font-size:17px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .send-btn:disabled{opacity:.4;cursor:default}
 .st{height:16px;margin-top:4px;font-size:11px}
 .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#8A8A8E;gap:8px}
 .compose-wrap{flex:1;padding:20px;display:flex;flex-direction:column;gap:10px;overflow:auto}
 .inp{width:100%;padding:10px 14px;border-radius:10px;border:1px solid #EBEBEB;background:#F7F6F3;font-size:13px;color:#1C1C1E;outline:none;font-family:inherit}
-.loading{padding:40px;text-align:center;color:#8A8A8E;font-size:13px}
+.loading{padding:30px;text-align:center;color:#8A8A8E;font-size:13px}
+
+/* SEARCH RESULTS */
+.search-info{padding:8px 12px;font-size:11px;color:#8A8A8E;border-bottom:1px solid #EBEBEB;background:#F7F6F3}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal{background:#fff;border-radius:14px;padding:20px;width:300px;box-shadow:0 8px 30px rgba(0,0,0,.15)}
+.modal-title{font-size:15px;font-weight:700;color:#1C1C1E;margin-bottom:14px}
+.modal-inp{width:100%;padding:9px 12px;border-radius:8px;border:1px solid #EBEBEB;font-size:13px;outline:none;font-family:inherit;margin-bottom:10px}
+.color-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.color-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent}
+.color-dot.sel{border-color:#1C1C1E}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btn{padding:7px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer}
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="sb">
+  <!-- SIDEBAR -->
+  <div class="sb" id="sidebar">
+    <div class="resize-handle" id="resizeHandle"><div class="resize-bar"></div></div>
     <div class="sb-top">
-      <div class="sb-title">Boîte mail <button class="nbtn" id="newBtn">+ Nouveau</button></div>
-      <input class="srch" id="search" placeholder="Rechercher…">
+      <div class="sb-title">Ma Boîte Mail <button class="nbtn" id="newBtn">+ Nouveau</button></div>
+      <div class="srch-wrap">
+        <span class="srch-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+        <input class="srch" id="search" placeholder="Rechercher…">
+        <button class="srch-clear" id="srchClear">×</button>
+      </div>
     </div>
+
+    <!-- FOLDERS -->
+    <div class="folders" id="folders">
+      <div class="folder on" data-folder="INBOX" onclick="switchFolder('INBOX',this)"><span class="folder-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></span>Boîte de réception<span class="folder-count" id="cnt-INBOX">0</span></div>
+      <div class="folder" data-folder="SENT" onclick="switchFolder('SENT',this)"><span class="folder-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></span>Envoyés</div>
+      <div class="folder" data-folder="DRAFT" onclick="switchFolder('DRAFT',this)"><span class="folder-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>Brouillons</div>
+      <div class="folder" data-folder="SPAM" onclick="switchFolder('SPAM',this)"><span class="folder-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></span>Spam</div>
+      <div class="folder" data-folder="TRASH" onclick="switchFolder('TRASH',this)"><span class="folder-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>Corbeille</div>
+    </div>
+
+    <!-- LABELS -->
+    <div class="labels-section">
+      <div class="labels-title">Étiquettes <button class="label-add" onclick="showAddLabel()" title="Nouvelle étiquette"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></div>
+      <div id="labelsList"></div>
+    </div>
+
+    <div class="search-info" id="searchInfo" style="display:none"></div>
     <div class="tlist" id="tlist"><div class="loading">Connectez votre Gmail →</div></div>
-    <div class="auth-zone" id="authZone">
+
+    <div class="auth-zone">
       <button class="auth-btn" id="authBtn">🔗 Connecter mon Gmail</button>
       <div id="connectedZone" style="display:none">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <span class="connected">● Gmail connecté</span>
-          <button class="refresh-btn" id="refreshBtn">↻ Actualiser</button>
+          <button class="refresh-btn" id="refreshBtn">↻</button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- MAIN -->
   <div class="main" id="main">
     <div class="empty">
       <div style="font-size:38px">✉️</div>
@@ -92,39 +168,97 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;ba
     </div>
   </div>
 </div>
+
 <script>
 const CLIENT_ID="503752573647-0mo2us3ukmg3dbnuvj9mc3db6bdlk029.apps.googleusercontent.com";
 const SCOPES="https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly";
 const REDIRECT="https://0rakless.github.io/Ma-boite-mail/";
 
+const COLORS=["#E07B6A","#5B5FEF","#34C68A","#F5A623","#C46BBF","#4FABD6","#7C6BDE","#56C4A8"];
 const P=["#7C6BDE","#4FABD6","#56C4A8","#E07B6A","#C46BBF","#D4A843","#5D8EE0"];
 const hue=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%P.length;return P[h]};
 const ini=n=>n.split(/\s+/).slice(0,2).map(w=>w[0]?.toUpperCase()||"").join("");
 const tl=iso=>{if(!iso)return"";const d=new Date(iso),now=new Date(),s=(now-d)/1000;if(s<3600)return`${Math.floor(s/60)}m`;if(s<86400)return d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});if(s<604800)return d.toLocaleDateString("fr-FR",{weekday:"short"});return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"short"})};
+const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
-let token=null,threads=[],sel=null,allMsgs=[],nextPageToken=null;
+let token=null, threads=[], sel=null, allMsgs=[], nextPageToken=null, curFolder="INBOX";
+let labels=JSON.parse(localStorage.getItem("mailLabels")||'[{"id":"unread","name":"Non lu","color":"#5B5FEF"},{"id":"urgent","name":"Urgent","color":"#E07B6A"}]');
+let threadLabels=JSON.parse(localStorage.getItem("threadLabels")||'{}');
+let searchMode=false, searchQuery="";
 
-// Handle OAuth redirect
+// OAuth redirect
 const hash=new URLSearchParams(window.location.hash.slice(1));
 if(hash.get("access_token")){
   token=hash.get("access_token");
   window.history.replaceState({},document.title,window.location.pathname);
-  showConnected();
-  loadThreads();
+  showConnected();loadThreads();
 }
 
 function showConnected(){
   document.getElementById("authBtn").style.display="none";
   document.getElementById("connectedZone").style.display="block";
 }
-
 document.getElementById("authBtn").onclick=()=>{
   const p=new URLSearchParams({client_id:CLIENT_ID,redirect_uri:REDIRECT,response_type:"token",scope:SCOPES,prompt:"consent"});
   window.location.href=`https://accounts.google.com/o/oauth2/v2/auth?${p}`;
 };
-document.getElementById("refreshBtn").onclick=()=>loadThreads(false);
+document.getElementById("refreshBtn").onclick=()=>searchMode?doSearch(searchQuery):loadThreads(false);
 document.getElementById("newBtn").onclick=showCompose;
-document.getElementById("search").oninput=e=>renderList(e.target.value.toLowerCase());
+
+// Search
+const searchEl=document.getElementById("search");
+const clearBtn=document.getElementById("srchClear");
+let searchTimer=null;
+searchEl.oninput=e=>{
+  const q=e.target.value.trim();
+  clearBtn.style.display=q?"block":"none";
+  clearTimeout(searchTimer);
+  if(!q){exitSearch();return;}
+  searchTimer=setTimeout(()=>doSearch(q),600);
+};
+clearBtn.onclick=()=>{searchEl.value="";clearBtn.style.display="none";exitSearch();};
+
+async function doSearch(q){
+  if(!token){filterLocal(q);return;}
+  searchMode=true;searchQuery=q;
+  threads=[];nextPageToken=null;
+  document.getElementById("tlist").innerHTML='<div class="loading">Recherche en cours…</div>';
+  document.getElementById("searchInfo").style.display="none";
+  try{
+    // Search across all folders
+    const data=await gFetch(`threads?maxResults=50&q=${encodeURIComponent(q)}`);
+    nextPageToken=data.nextPageToken||null;
+    if(!data.threads||!data.threads.length){
+      document.getElementById("tlist").innerHTML='<div class="loading">Aucun résultat</div>';
+      document.getElementById("searchInfo").textContent=`Aucun email trouvé pour "${q}"`;
+      document.getElementById("searchInfo").style.display="block";
+      return;
+    }
+    await parseAndRenderThreads(data.threads);
+    document.getElementById("searchInfo").textContent=`${threads.length} résultat(s) pour "${q}"${nextPageToken?" — scroll pour en voir plus":""}`;
+    document.getElementById("searchInfo").style.display="block";
+  }catch(e){document.getElementById("tlist").innerHTML='<div class="loading">Erreur de recherche</div>';}
+}
+
+function filterLocal(q){
+  searchMode=false;
+  renderList(q.toLowerCase());
+}
+
+function exitSearch(){
+  searchMode=false;searchQuery="";
+  document.getElementById("searchInfo").style.display="none";
+  loadThreads(false);
+}
+
+async function switchFolder(folder, el){
+  curFolder=folder;searchMode=false;searchQuery="";
+  searchEl.value="";clearBtn.style.display="none";
+  document.querySelectorAll(".folder").forEach(f=>f.classList.remove("on"));
+  el.classList.add("on");
+  document.getElementById("searchInfo").style.display="none";
+  await loadThreads(false);
+}
 
 async function gFetch(path,opts={}){
   const r=await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/${path}`,{...opts,headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json",...opts.headers}});
@@ -137,49 +271,69 @@ function makeRaw({to,subject,body,replyToMessageId}){
   return btoa(unescape(encodeURIComponent(lines.join("\r\n")))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
 }
 
+const FOLDER_QUERIES={INBOX:"in:inbox",SENT:"in:sent",DRAFT:"in:drafts",SPAM:"in:spam",TRASH:"in:trash"};
+
 async function loadThreads(append=false){
-  if(!append){
-    threads=[];nextPageToken=null;
-    document.getElementById("tlist").innerHTML='<div class="loading">Chargement…</div>';
-  }
+  if(!token)return;
+  if(!append){threads=[];nextPageToken=null;document.getElementById("tlist").innerHTML='<div class="loading">Chargement…</div>';}
   try{
-    let url="threads?maxResults=50&labelIds=INBOX";
+    const q=FOLDER_QUERIES[curFolder]||"in:inbox";
+    let url=`threads?maxResults=50&q=${encodeURIComponent(q)}`;
     if(append&&nextPageToken)url+=`&pageToken=${nextPageToken}`;
     const data=await gFetch(url);
     nextPageToken=data.nextPageToken||null;
     if(!data.threads){document.getElementById("tlist").innerHTML='<div class="loading">Aucun email</div>';return;}
-    // Load in batches of 10 to avoid rate limits
-    const batches=[];
-    for(let i=0;i<data.threads.length;i+=10)batches.push(data.threads.slice(i,i+10));
-    for(const batch of batches){
-      const details=await Promise.all(batch.map(t=>gFetch(`threads/${t.id}?format=METADATA&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`)));
-      const parsed=details.map(t=>{
-        const first=t.messages?.[0],last=t.messages?.[t.messages.length-1];
-        const get=(msg,n)=>(msg?.payload?.headers||[]).find(h=>h.name.toLowerCase()===n)?.value||"";
-        const from=get(first,"from"),nm=from.match(/^(.+?)\s*</),em=from.match(/<(.+?)>/);
-        return{id:t.id,threadId:t.id,name:nm?nm[1].replace(/"/g,"").trim():from,email:em?em[1]:from,
-          subj:get(first,"subject")||"(sans objet)",snip:last?.snippet||"",
-          time:new Date(parseInt(last?.internalDate||Date.now())).toISOString(),
-          unread:(last?.labelIds||[]).includes("UNREAD"),lastId:last?.id};
-      });
-      threads=[...threads,...parsed];
-      renderList(document.getElementById("search").value.toLowerCase());
+    await parseAndRenderThreads(data.threads);
+    // Update unread count for inbox
+    if(curFolder==="INBOX"){
+      const cnt=threads.filter(t=>t.unread).length;
+      document.getElementById("cnt-INBOX").textContent=cnt||"";
     }
-  }catch(e){document.getElementById("tlist").innerHTML='<div class="loading">Erreur de chargement</div>';}
+  }catch(e){document.getElementById("tlist").innerHTML='<div class="loading">Erreur</div>';}
+}
+
+async function parseAndRenderThreads(rawThreads){
+  const batches=[];
+  for(let i=0;i<rawThreads.length;i+=10)batches.push(rawThreads.slice(i,i+10));
+  for(const batch of batches){
+    const details=await Promise.all(batch.map(t=>gFetch(`threads/${t.id}?format=METADATA&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`)));
+    const parsed=details.map(t=>{
+      const first=t.messages?.[0],last=t.messages?.[t.messages.length-1];
+      const get=(msg,n)=>(msg?.payload?.headers||[]).find(h=>h.name.toLowerCase()===n)?.value||"";
+      const from=get(first,"from"),nm=from.match(/^(.+?)\s*</),em=from.match(/<(.+?)>/);
+      return{id:t.id,threadId:t.id,name:nm?nm[1].replace(/"/g,"").trim():from,email:em?em[1]:from,
+        subj:get(first,"subject")||"(sans objet)",snip:last?.snippet||"",
+        time:new Date(parseInt(last?.internalDate||Date.now())).toISOString(),
+        unread:(last?.labelIds||[]).includes("UNREAD"),lastId:last?.id};
+    });
+    threads=[...threads,...parsed];
+    renderList();
+  }
 }
 
 function renderList(q=""){
   const list=document.getElementById("tlist");list.innerHTML="";
-  const visible=threads.filter(t=>!q||[t.subj,t.name,t.snip].some(s=>(s||"").toLowerCase().includes(q)));
+  let visible=threads;
+  if(q)visible=threads.filter(t=>!q||[t.subj,t.name,t.snip].some(s=>(s||"").toLowerCase().includes(q)));
+  // Filter by active label if any
+  const activeLabel=document.querySelector(".label-item.on");
+  if(activeLabel){
+    const lid=activeLabel.dataset.id;
+    visible=visible.filter(t=>(threadLabels[t.id]||[]).includes(lid));
+  }
+  if(!visible.length){list.innerHTML='<div class="loading">Aucun email</div>';return;}
   visible.forEach(t=>{
     const el=document.createElement("div");
     el.className="ti"+(sel?.id===t.id?" on":"");
     const c=hue(t.name);
+    const tl2=threadLabels[t.id]||[];
+    const labelHtml=tl2.map(lid=>{const l=labels.find(x=>x.id===lid);return l?`<span class="ti-label" style="background:${l.color}22;color:${l.color}">${esc(l.name)}</span>`:""}).join("");
     el.innerHTML=`<div class="av" style="background:${c}">${ini(t.name)}</div>
     <div class="ti-info">
-      <div class="ti-name${t.unread?" u":""}">${escHtml(t.name)}</div>
-      <div class="ti-subj${t.unread?" u":""}">${escHtml(t.subj)}</div>
-      <div class="ti-snip">${escHtml(t.snip)}</div>
+      <div class="ti-name${t.unread?" u":""}">${esc(t.name)}</div>
+      <div class="ti-subj${t.unread?" u":""}">${esc(t.subj)}</div>
+      <div class="ti-snip">${esc(t.snip)}</div>
+      ${labelHtml?`<div class="ti-labels">${labelHtml}</div>`:""}
     </div>
     <div class="ti-meta">
       <div class="ti-time">${tl(t.time)}</div>
@@ -188,35 +342,126 @@ function renderList(q=""){
     el.onclick=()=>openThread(t);
     list.appendChild(el);
   });
-  // Load more button
-  if(nextPageToken&&!q){
+  if(nextPageToken){
     const btn=document.createElement("div");
-    btn.className="load-more";btn.textContent="Charger plus d'emails…";
-    btn.onclick=()=>loadThreads(true);
+    btn.className="load-more";btn.textContent="Charger plus…";
+    btn.onclick=()=>searchMode?loadMoreSearch():loadThreads(true);
     list.appendChild(btn);
   }
 }
 
-function escHtml(s){return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+async function loadMoreSearch(){
+  if(!nextPageToken)return;
+  try{
+    const data=await gFetch(`threads?maxResults=50&q=${encodeURIComponent(searchQuery)}&pageToken=${nextPageToken}`);
+    nextPageToken=data.nextPageToken||null;
+    if(data.threads)await parseAndRenderThreads(data.threads);
+    document.getElementById("searchInfo").textContent=`${threads.length} résultat(s) pour "${searchQuery}"${nextPageToken?" — scroll pour en voir plus":""}`;
+  }catch(e){}
+}
 
+// LABELS
+function renderLabels(){
+  const el=document.getElementById("labelsList");el.innerHTML="";
+  labels.forEach(l=>{
+    const cnt=(Object.entries(threadLabels).filter(([,v])=>v.includes(l.id))).length;
+    const div=document.createElement("div");
+    div.className="label-item";div.dataset.id=l.id;
+    div.innerHTML=`<div class="label-dot" style="background:${l.color}"></div><span>${esc(l.name)}</span>${cnt?`<span class="label-count">${cnt}</span>`:""}`;
+    div.onclick=()=>{
+      const wasOn=div.classList.contains("on");
+      document.querySelectorAll(".label-item").forEach(x=>x.classList.remove("on"));
+      if(!wasOn){div.classList.add("on");}
+      renderList();
+    };
+    el.appendChild(div);
+  });
+}
+renderLabels();
+
+function saveLabels(){localStorage.setItem("mailLabels",JSON.stringify(labels));localStorage.setItem("threadLabels",JSON.stringify(threadLabels));}
+
+function showAddLabel(){
+  let selColor=COLORS[0];
+  const bg=document.createElement("div");bg.className="modal-bg";
+  bg.innerHTML=`<div class="modal">
+    <div class="modal-title">Nouvelle étiquette</div>
+    <input class="modal-inp" id="labelName" placeholder="Nom de l'étiquette">
+    <div class="color-row">${COLORS.map(c=>`<div class="color-dot${c===selColor?" sel":""}" style="background:${c}" data-c="${c}" onclick="this.parentNode.querySelectorAll('.color-dot').forEach(x=>x.classList.remove('sel'));this.classList.add('sel');window._lc='${c}'"></div>`).join("")}</div>
+    <div class="modal-btns">
+      <button class="modal-btn" style="background:#F5F4F0;color:#444" onclick="this.closest('.modal-bg').remove()">Annuler</button>
+      <button class="modal-btn" style="background:#5B5FEF;color:#fff" onclick="createLabel()">Créer</button>
+    </div>
+  </div>`;
+  window._lc=selColor;
+  document.body.appendChild(bg);
+}
+
+function createLabel(){
+  const name=document.getElementById("labelName").value.trim();
+  if(!name)return;
+  const color=window._lc||COLORS[0];
+  const id="lbl_"+Date.now();
+  labels.push({id,name,color});
+  saveLabels();renderLabels();
+  document.querySelector(".modal-bg")?.remove();
+}
+
+function showLabelMenu(t){
+  const existing=document.querySelector(".label-menu");if(existing)existing.remove();
+  const menu=document.createElement("div");
+  menu.className="modal-bg";
+  menu.innerHTML=`<div class="modal">
+    <div class="modal-title">Étiquettes pour cet email</div>
+    ${labels.map(l=>{
+      const has=(threadLabels[t.id]||[]).includes(l.id);
+      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer" onclick="toggleLabel('${t.id}','${l.id}',this)">
+        <div style="width:14px;height:14px;border-radius:3px;border:2px solid ${l.color};background:${has?l.color:'transparent'}"></div>
+        <div class="label-dot" style="background:${l.color}"></div>
+        <span style="font-size:13px">${esc(l.name)}</span>
+      </div>`;
+    }).join("")}
+    <div class="modal-btns" style="margin-top:10px">
+      <button class="modal-btn" style="background:#5B5FEF;color:#fff" onclick="this.closest('.modal-bg').remove()">Fermer</button>
+    </div>
+  </div>`;
+  document.body.appendChild(menu);
+}
+
+function toggleLabel(tid,lid,row){
+  if(!threadLabels[tid])threadLabels[tid]=[];
+  const idx=threadLabels[tid].indexOf(lid);
+  if(idx>=0)threadLabels[tid].splice(idx,1);
+  else threadLabels[tid].push(lid);
+  saveLabels();renderLabels();renderList();
+  const has=threadLabels[tid].includes(lid);
+  const l=labels.find(x=>x.id===lid);
+  row.querySelector("div").style.background=has?(l?.color||""):"transparent";
+}
+
+// OPEN THREAD
 async function openThread(t){
-  sel=t;t.unread=false;renderList(document.getElementById("search").value.toLowerCase());
+  sel=t;t.unread=false;renderList();
   const main=document.getElementById("main"),c=hue(t.name);
   main.innerHTML=`
   <div class="mh">
-    <div class="mh-left"><div class="mh-title">${escHtml(t.subj)}</div><div class="mh-sub">${escHtml(t.name)} · ${escHtml(t.email)}</div></div>
-    <button class="sum-btn" id="sumBtn">✦ Résumer</button>
+    <div class="mh-left"><div class="mh-title">${esc(t.subj)}</div><div class="mh-sub">${esc(t.name)} · ${esc(t.email)}</div></div>
+    <div class="mh-actions">
+      <button class="label-btn" onclick="showLabelMenu(window._selThread)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-1px"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Étiquette</button>
+      <button class="sum-btn" id="sumBtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Résumer</button>
+    </div>
   </div>
   <div class="sum-box" id="sumBox"><div class="sum-lbl">Résumé IA</div><div id="sumTxt"></div><button class="sum-x" id="sumX">×</button></div>
   <div class="msgs" id="msgs"><div class="loading">Chargement…</div></div>
   <div class="rbar">
     <div class="rrow">
-      <textarea class="rinput" id="ri" placeholder="Répondre à ${escHtml(t.name)}… (Entrée pour envoyer)" rows="1"></textarea>
+      <textarea class="rinput" id="ri" placeholder="Répondre… (Entrée pour envoyer)" rows="1"></textarea>
       <button class="send-btn" id="sendBtn">↑</button>
     </div>
     <div class="st" id="st"></div>
   </div>`;
 
+  window._selThread=t;
   document.getElementById("sumX").onclick=()=>document.getElementById("sumBox").classList.remove("vis");
   document.getElementById("sumBtn").onclick=()=>summarise();
   document.getElementById("sendBtn").onclick=()=>sendReply(t);
@@ -235,22 +480,17 @@ async function openThread(t){
         return msg.snippet||"";
       }
       function cleanBody(txt){
-        // Remove HTML tags
         txt=txt.replace(/<[^>]*>/g," ");
-        // Decode HTML entities
         const el=document.createElement("div");el.innerHTML=txt;txt=el.textContent||el.innerText||"";
-        // Remove quoted reply lines (lines starting with >)
         txt=txt.split("\n").filter(l=>!l.trim().startsWith(">")).join("\n");
-        // Remove "On ... wrote:" lines
         txt=txt.replace(/Le .+? a écrit\s*:/gi,"").replace(/On .+? wrote\s*:/gi,"");
-        // Collapse multiple blank lines
         txt=txt.replace(/\n{3,}/g,"\n\n").trim();
         return txt;
       }
       return{messageId:msg.id,mine:isMe,name:nm?nm[1].replace(/"/g,"").trim():from,body:cleanBody(getBody(msg.payload)).slice(0,1000),t:new Date(parseInt(msg.internalDate||Date.now())).toISOString()};
     });
     renderMsgs(c);
-  }catch(e){document.getElementById("msgs").innerHTML='<div class="loading">Erreur de chargement</div>';}
+  }catch(e){document.getElementById("msgs").innerHTML='<div class="loading">Erreur</div>';}
 }
 
 function renderMsgs(c){
@@ -259,14 +499,9 @@ function renderMsgs(c){
   allMsgs.forEach(m=>{
     const w=document.createElement("div");
     w.className="bw "+(m.mine?"mine":"theirs");
-    if(!m.mine)w.innerHTML=`<div class="srow"><div class="mav" style="background:${c}">${ini(m.name)}</div><span class="sname">${escHtml(m.name)}</span></div>`;
-    const bub=document.createElement("div");
-    bub.className="bub "+(m.mine?"mine":"theirs");
-    bub.textContent=m.body;
-    w.appendChild(bub);
-    const bt=document.createElement("div");
-    bt.className="btime";bt.textContent=tl(m.t);
-    w.appendChild(bt);
+    if(!m.mine){const sr=document.createElement("div");sr.className="srow";sr.innerHTML=`<div class="mav" style="background:${c}">${ini(m.name)}</div><span class="sname">${esc(m.name)}</span>`;w.appendChild(sr);}
+    const bub=document.createElement("div");bub.className="bub "+(m.mine?"mine":"theirs");bub.textContent=m.body;w.appendChild(bub);
+    const bt=document.createElement("div");bt.className="btime";bt.textContent=tl(m.t);w.appendChild(bt);
     container.appendChild(w);
   });
   container.scrollTop=9999;
@@ -282,11 +517,11 @@ async function sendReply(t){
     const payload={raw};if(t.threadId)payload.threadId=t.threadId;
     const res=await gFetch("messages/send",{method:"POST",body:JSON.stringify(payload)});
     if(res.id){
-      st.innerHTML='<span style="color:#34C68A">✓ Email envoyé !</span>';
+      st.innerHTML='<span style="color:#34C68A">✓ Envoyé !</span>';
       allMsgs.push({mine:true,name:"Moi",body:val,t:new Date().toISOString()});
       inp.value="";renderMsgs(hue(t.name));
-    }else{st.innerHTML='<span style="color:#E05C5C">✗ Erreur d\'envoi</span>';}
-  }catch(e){st.innerHTML='<span style="color:#E05C5C">✗ Erreur réseau</span>';}
+    }else st.innerHTML='<span style="color:#E05C5C">✗ Erreur</span>';
+  }catch{st.innerHTML='<span style="color:#E05C5C">✗ Erreur réseau</span>';}
   document.getElementById("sendBtn").disabled=false;
 }
 
@@ -302,26 +537,23 @@ async function summarise(){
 }
 
 function showCompose(){
-  sel=null;renderList(document.getElementById("search").value.toLowerCase());
+  sel=null;renderList();
   document.getElementById("main").innerHTML=`
   <div class="mh"><div class="mh-left"><div class="mh-title">Nouveau message</div></div>
-  <button onclick="document.getElementById('main').innerHTML='<div class=empty><div style=font-size:38px>✉️</div><div>Sélectionnez une conversation</div></div>'" style="background:none;border:none;color:#8A8A8E;font-size:22px;cursor:pointer;margin-left:10px">×</button></div>
+  <button onclick="document.getElementById('main').innerHTML='<div class=empty><div style=font-size:38px>✉️</div><div>Sélectionnez une conversation</div></div>'" style="background:none;border:none;color:#8A8A8E;font-size:22px;cursor:pointer">×</button></div>
   <div class="compose-wrap">
     <input class="inp" id="cTo" placeholder="À (adresse email)">
     <input class="inp" id="cSubj" placeholder="Objet">
     <textarea class="inp" id="cBody" placeholder="Votre message…" style="flex:1;resize:none;padding-top:12px"></textarea>
     <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px">
-      <div class="st" id="cSt" style="height:auto"></div>
+      <div id="cSt" style="font-size:11px"></div>
       <button onclick="sendNew()" style="background:#5B5FEF;color:#fff;border:none;border-radius:10px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer">Envoyer ↑</button>
     </div>
   </div>`;
 }
 
 async function sendNew(){
-  const to=document.getElementById("cTo").value.trim(),
-        subj=document.getElementById("cSubj").value.trim()||"(sans objet)",
-        body=document.getElementById("cBody").value.trim(),
-        st=document.getElementById("cSt");
+  const to=document.getElementById("cTo").value.trim(),subj=document.getElementById("cSubj").value.trim()||"(sans objet)",body=document.getElementById("cBody").value.trim(),st=document.getElementById("cSt");
   if(!to||!body)return;
   st.textContent="Envoi…";
   try{
@@ -331,6 +563,29 @@ async function sendNew(){
     else st.innerHTML='<span style="color:#E05C5C">✗ Erreur</span>';
   }catch{st.innerHTML='<span style="color:#E05C5C">✗ Erreur réseau</span>';}
 }
+// ── Sidebar resize ──
+const sidebar=document.getElementById("sidebar");
+const handle=document.getElementById("resizeHandle");
+let isResizing=false,startX=0,startW=0;
+handle.addEventListener("mousedown",e=>{
+  isResizing=true;startX=e.clientX;startW=sidebar.offsetWidth;
+  handle.classList.add("dragging");
+  document.body.style.cursor="col-resize";
+  document.body.style.userSelect="none";
+  e.preventDefault();
+});
+document.addEventListener("mousemove",e=>{
+  if(!isResizing)return;
+  const w=Math.min(460,Math.max(160,startW+(e.clientX-startX)));
+  sidebar.style.width=w+"px";
+});
+document.addEventListener("mouseup",()=>{
+  if(!isResizing)return;
+  isResizing=false;
+  handle.classList.remove("dragging");
+  document.body.style.cursor="";
+  document.body.style.userSelect="";
+});
 </script>
 </body>
 </html>
