@@ -778,20 +778,19 @@ async function openThread(t){
       const get=n=>(msg.payload?.headers||[]).find(h=>h.name.toLowerCase()===n)?.value||"";
       const from=get("from"),nm=from.match(/^(.+?)\s*</);
       const isMe=(msg.labelIds||[]).includes("SENT");
-      function findPlain(part){
-        if(!part)return null;
-        if(part.mimeType==="text/plain"&&part.body?.data)try{return decodeURIComponent(escape(atob(part.body.data.replace(/-/g,"+").replace(/_/g,"/"))));}catch{return null;}
-        if(part.parts)for(const x of part.parts){const r=findPlain(x);if(r)return r;}
-        return null;
-      }
-      function findHtml(part){
-        if(!part)return null;
-        if(part.mimeType==="text/html"&&part.body?.data)try{return decodeURIComponent(escape(atob(part.body.data.replace(/-/g,"+").replace(/_/g,"/"))));}catch{return null;}
-        if(part.parts)for(const x of part.parts){const r=findHtml(x);if(r)return r;}
-        return null;
-      }
       function getBody(p){
         if(!p)return"";
+        // Prefer text/plain
+        function findPlain(part){
+          if(part.mimeType==="text/plain"&&part.body?.data)try{return decodeURIComponent(escape(atob(part.body.data.replace(/-/g,"+").replace(/_/g,"/"))));}catch{return null;}
+          if(part.parts)for(const x of part.parts){const r=findPlain(x);if(r)return r;}
+          return null;
+        }
+        function findHtml(part){
+          if(part.mimeType==="text/html"&&part.body?.data)try{return decodeURIComponent(escape(atob(part.body.data.replace(/-/g,"+").replace(/_/g,"/"))));}catch{return null;}
+          if(part.parts)for(const x of part.parts){const r=findHtml(x);if(r)return r;}
+          return null;
+        }
         const plain=findPlain(p);
         const html=findHtml(p);
         // If the plain-text version looks like one giant run-on line (few/no newlines
@@ -863,38 +862,7 @@ async function openThread(t){
         if(p.parts)for(const x of p.parts)getAttachments(x,out);
         return out;
       }
-      function isRichHtml(html){
-        if(!html)return false;
-        // Heuristic: rich/complex emails (newsletters, receipts) usually have images, multiple tables, or many styled blocks
-        const imgCount=(html.match(/<img\b/gi)||[]).length;
-        const tableCount=(html.match(/<table\b/gi)||[]).length;
-        const hasInlineColor=/style\s*=\s*["'][^"']*background(-color)?\s*:/i.test(html);
-        return imgCount>=1 || tableCount>=2 || hasInlineColor;
-      }
-      function sanitizeRichHtml(html){
-        let h=html;
-        h=h.replace(/<script[\s\S]*?<\/script>/gi,"");
-        h=h.replace(/<style[\s\S]*?<\/style>/gi,"");
-        h=h.replace(/\son\w+\s*=\s*"[^"]*"/gi,"");
-        h=h.replace(/\son\w+\s*=\s*'[^']*'/gi,"");
-        h=h.replace(/javascript:/gi,"");
-        // Strip cid: image references (can't be resolved without extra fetches) to avoid broken icons
-        h=h.replace(/src=["']cid:[^"']*["']/gi, 'src=""');
-        return h;
-      }
-      const plainSrc=findPlain(msg.payload);
-      const htmlSrc=findHtml(msg.payload);
-      const rich = isRichHtml(htmlSrc);
-      const rawBody = getBody(msg.payload);
-      return{
-        messageId:msg.id,
-        mine:isMe,
-        name:nm?nm[1].replace(/"/g,"").trim():from,
-        body: rich ? "" : cleanBody(rawBody).slice(0,1000),
-        richHtml: rich ? sanitizeRichHtml(htmlSrc) : null,
-        t:new Date(parseInt(msg.internalDate||Date.now())).toISOString(),
-        attachments:getAttachments(msg.payload)
-      };
+      return{messageId:msg.id,mine:isMe,name:nm?nm[1].replace(/"/g,"").trim():from,body:cleanBody(getBody(msg.payload)).slice(0,1000),t:new Date(parseInt(msg.internalDate||Date.now())).toISOString(),attachments:getAttachments(msg.payload)};
     });
     renderMsgs(c);
   }catch(e){document.getElementById("msgs").innerHTML='<div class="loading">Erreur</div>';}
@@ -1033,47 +1001,25 @@ function renderMsgs(c){
     const w=document.createElement("div");
     w.className="bw "+(m.mine?"mine":"theirs");
     if(!m.mine){const sr=document.createElement("div");sr.className="srow";sr.innerHTML=`<div class="mav" style="background:${c}">${ini(m.name)}</div><span class="sname">${esc(m.name)}</span>`;w.appendChild(sr);}
-
-    if(m.richHtml){
-      // Rich HTML email (newsletter, receipt, etc.) — render in a clean white card with an iframe
-      const card=document.createElement("div");
-      card.style.cssText="width:480px;max-width:75%;border-radius:14px;overflow:hidden;border:1px solid #EBEBEB;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.05)";
-      const iframe=document.createElement("iframe");
-      iframe.style.cssText="width:100%;border:none;display:block;background:#fff";
-      iframe.sandbox="allow-same-origin";
-      card.appendChild(iframe);
-      w.appendChild(card);
-      // Write sanitized HTML into the iframe and auto-size it to its content
-      const doc=iframe.contentWindow.document;
-      doc.open();
-      doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><base target="_blank"><style>body{margin:0;padding:14px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1A1612;overflow-x:hidden}img{max-width:100%;height:auto}table{max-width:100%}</style></head><body>${m.richHtml}</body></html>`);
-      doc.close();
-      const resizeIframe=()=>{ try{ iframe.style.height=(doc.body.scrollHeight+4)+"px"; }catch(e){} };
-      iframe.onload=resizeIframe;
-      setTimeout(resizeIframe,80);
-      setTimeout(resizeIframe,400);
-    } else {
-      const bub=document.createElement("div");bub.className="bub "+(m.mine?"mine":"theirs");
-      const textPart=document.createElement("div");
-      textPart.textContent=m.mine?prettifyBody(m.body):m.body;
-      bub.appendChild(textPart);
-      if(m.attachments&&m.attachments.length){
-        const att=document.createElement("div");
-        att.className="att-list";
-        att.style.cssText=`display:flex;flex-direction:column;gap:5px;margin-top:${textPart.textContent.trim()?"8px":"0"}`;
-        m.attachments.forEach(a=>{
-          const row=document.createElement("div");
-          row.style.cssText=`display:flex;align-items:center;gap:7px;background:${m.mine?'rgba(255,255,255,0.18)':'rgba(255,255,255,0.25)'};color:inherit;border-radius:9px;padding:6px 9px;font-size:11px;cursor:pointer`;
-          row.innerHTML=`${fileIcon(a.mimeType,a.filename)}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.filename)}</span><span style="opacity:.75;font-size:10px">${fmtSize(a.size)}</span>`;
-          row.title="Cliquer pour prévisualiser";
-          row.onclick=()=>previewAttachment(m.messageId,a.attachmentId,a.filename,a.mimeType);
-          att.appendChild(row);
-        });
-        bub.appendChild(att);
-      }
-      w.appendChild(bub);
+    const bub=document.createElement("div");bub.className="bub "+(m.mine?"mine":"theirs");
+    const textPart=document.createElement("div");
+    textPart.textContent=m.mine?prettifyBody(m.body):m.body;
+    bub.appendChild(textPart);
+    if(m.attachments&&m.attachments.length){
+      const att=document.createElement("div");
+      att.className="att-list";
+      att.style.cssText=`display:flex;flex-direction:column;gap:5px;margin-top:${textPart.textContent.trim()?"8px":"0"}`;
+      m.attachments.forEach(a=>{
+        const row=document.createElement("div");
+        row.style.cssText=`display:flex;align-items:center;gap:7px;background:${m.mine?'rgba(255,255,255,0.18)':'rgba(255,255,255,0.25)'};color:inherit;border-radius:9px;padding:6px 9px;font-size:11px;cursor:pointer`;
+        row.innerHTML=`${fileIcon(a.mimeType,a.filename)}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.filename)}</span><span style="opacity:.75;font-size:10px">${fmtSize(a.size)}</span>`;
+        row.title="Cliquer pour prévisualiser";
+        row.onclick=()=>previewAttachment(m.messageId,a.attachmentId,a.filename,a.mimeType);
+        att.appendChild(row);
+      });
+      bub.appendChild(att);
     }
-
+    w.appendChild(bub);
     const bt=document.createElement("div");bt.className="btime";bt.textContent=tlFull(m.t);w.appendChild(bt);
     container.appendChild(w);
   });
