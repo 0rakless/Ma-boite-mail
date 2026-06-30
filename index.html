@@ -514,6 +514,10 @@ async function openThread(t){
         txt=txt.replace(/<[^>]*>/g," ");
         // Decode HTML entities
         const el=document.createElement("div");el.innerHTML=txt;txt=el.textContent||el.innerText||"";
+        // Remove embedded image references like [cid:image001.jpg@...]
+        txt=txt.replace(/\[cid:[^\]]*\]/gi," ");
+        // Remove "Pensez à l'environnement avant d'imprimer" type eco-footers
+        txt=txt.replace(/Pensez\s+à\s+l['’]environnement\s+avant\s+d['’]imprimer\s+ce\s+message\.?/gi,"");
         // Remove quoted reply lines (lines starting with >)
         txt=txt.split("\n").filter(l=>!l.trim().startsWith(">")).join("\n");
         // Cut off at the start of a quoted email chain (French & English clients)
@@ -543,6 +547,17 @@ async function openThread(t){
   }catch(e){document.getElementById("msgs").innerHTML='<div class="loading">Erreur</div>';}
 }
 
+function prettifyBody(txt){
+  if(!txt)return txt;
+  // Add a blank line after the greeting line (Bonjour X, / Bonsoir X,)
+  txt=txt.replace(/^((?:Bonjour|Bonsoir|Salut|Cher|Chère|Madame|Monsieur)[^\n]{0,60},?)\n(?!\n)/i,"$1\n\n");
+  // Add a blank line before common sign-off phrases if not already separated
+  const signoffs=/(Bonne journée|Bonne soirée|Cordialement|Bien cordialement|Bien à vous|Bien à toi|Merci d'avance|Sincèrement|À bientôt)/i;
+  txt=txt.replace(new RegExp("([^\\n])\\n("+signoffs.source+")","i"),"$1\n\n$2");
+  txt=txt.replace(/\n{3,}/g,"\n\n");
+  return txt.trim();
+}
+
 function renderMsgs(c){
   const container=document.getElementById("msgs");if(!container)return;
   container.innerHTML="";
@@ -550,7 +565,7 @@ function renderMsgs(c){
     const w=document.createElement("div");
     w.className="bw "+(m.mine?"mine":"theirs");
     if(!m.mine){const sr=document.createElement("div");sr.className="srow";sr.innerHTML=`<div class="mav" style="background:${c}">${ini(m.name)}</div><span class="sname">${esc(m.name)}</span>`;w.appendChild(sr);}
-    const bub=document.createElement("div");bub.className="bub "+(m.mine?"mine":"theirs");bub.textContent=m.body;w.appendChild(bub);
+    const bub=document.createElement("div");bub.className="bub "+(m.mine?"mine":"theirs");bub.textContent=m.mine?prettifyBody(m.body):m.body;w.appendChild(bub);
     const bt=document.createElement("div");bt.className="btime";bt.textContent=tlFull(m.t);w.appendChild(bt);
     container.appendChild(w);
   });
