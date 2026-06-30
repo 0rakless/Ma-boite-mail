@@ -849,22 +849,75 @@ async function downloadAttachment(messageId,attachmentId,filename,mimeType){
 }
 
 async function previewAttachment(messageId,attachmentId,filename,mimeType){
-  try{
-    const data=await gFetch(`messages/${messageId}/attachments/${attachmentId}`);
-    if(!data.data)return;
-    const b64=data.data.replace(/-/g,"+").replace(/_/g,"/");
-    if(mimeType.startsWith("image/")||mimeType==="application/pdf"){
-      const byteChars=atob(b64);
-      const bytes=new Uint8Array(byteChars.length);
-      for(let i=0;i<byteChars.length;i++)bytes[i]=byteChars.charCodeAt(i);
-      const blob=new Blob([bytes],{type:mimeType});
-      const url=URL.createObjectURL(blob);
-      window.open(url,"_blank");
-      setTimeout(()=>URL.revokeObjectURL(url),60000);
+  const existing=document.getElementById("attPreviewModal");
+  if(existing)existing.remove();
+
+  const modal=document.createElement("div");
+  modal.id="attPreviewModal";
+  modal.className="modal-bg";
+  modal.style.cssText="position:fixed;inset:0;background:rgba(26,22,18,.55);display:flex;align-items:center;justify-content:center;z-index:200";
+  modal.innerHTML=`
+    <div style="background:#fff;border-radius:16px;max-width:90vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.25)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #EBEBEB;gap:16px">
+        <div style="font-size:13px;font-weight:600;color:#1A1612;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(filename)}</div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button id="attModalDownload" style="background:#E8593C;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Télécharger</button>
+          <button id="attModalClose" style="background:#F5F4F0;border:none;border-radius:8px;width:30px;height:30px;cursor:pointer;color:#8A8A8E;font-size:18px;display:flex;align-items:center;justify-content:center">×</button>
+        </div>
+      </div>
+      <div id="attModalBody" style="flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:20px;min-width:300px;min-height:200px">
+        <div style="color:#8A8A8E;font-size:13px">Chargement…</div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  const closeModal=()=>modal.remove();
+  document.getElementById("attModalClose").onclick=closeModal;
+  modal.onclick=(e)=>{ if(e.target===modal) closeModal(); };
+
+  let blobUrl=null;
+  document.getElementById("attModalDownload").onclick=()=>{
+    if(blobUrl){
+      const a=document.createElement("a");
+      a.href=blobUrl;a.download=filename;document.body.appendChild(a);a.click();document.body.removeChild(a);
     }else{
       downloadAttachment(messageId,attachmentId,filename,mimeType);
     }
-  }catch(e){alert("Erreur lors de l'ouverture de la pièce jointe.");}
+  };
+
+  try{
+    const data=await gFetch(`messages/${messageId}/attachments/${attachmentId}`);
+    if(!data.data){
+      document.getElementById("attModalBody").innerHTML='<div style="color:#E05C5C;font-size:13px">Impossible de charger la pièce jointe.</div>';
+      return;
+    }
+    const b64=data.data.replace(/-/g,"+").replace(/_/g,"/");
+    const byteChars=atob(b64);
+    const bytes=new Uint8Array(byteChars.length);
+    for(let i=0;i<byteChars.length;i++)bytes[i]=byteChars.charCodeAt(i);
+    const blob=new Blob([bytes],{type:mimeType});
+    blobUrl=URL.createObjectURL(blob);
+
+    const body=document.getElementById("attModalBody");
+    if(mimeType.startsWith("image/")){
+      body.innerHTML="";
+      const img=document.createElement("img");
+      img.src=blobUrl;
+      img.style.cssText="max-width:80vw;max-height:70vh;border-radius:8px;display:block";
+      body.appendChild(img);
+    }else if(mimeType==="application/pdf"){
+      body.style.padding="0";
+      body.innerHTML=`<iframe src="${blobUrl}" style="width:80vw;height:75vh;border:none"></iframe>`;
+    }else{
+      body.innerHTML=`<div style="text-align:center;color:#8A8A8E;font-size:13px;padding:30px">
+        ${fileIcon(mimeType,filename)}
+        <div style="margin-top:10px">Aperçu non disponible pour ce type de fichier.</div>
+        <div style="margin-top:4px;font-size:11px">${esc(filename)} · ${fmtSize(bytes.length)}</div>
+      </div>`;
+    }
+  }catch(e){
+    document.getElementById("attModalBody").innerHTML='<div style="color:#E05C5C;font-size:13px">Erreur lors du chargement de la pièce jointe.</div>';
+  }
 }
 
 
@@ -887,11 +940,8 @@ function renderMsgs(c){
         const row=document.createElement("div");
         row.style.cssText=`display:flex;align-items:center;gap:7px;background:${m.mine?'rgba(255,255,255,0.18)':'rgba(255,255,255,0.25)'};color:inherit;border-radius:9px;padding:6px 9px;font-size:11px;cursor:pointer`;
         row.innerHTML=`${fileIcon(a.mimeType,a.filename)}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.filename)}</span><span style="opacity:.75;font-size:10px">${fmtSize(a.size)}</span>`;
-        row.title="Cliquer pour ouvrir, Alt+clic pour télécharger";
-        row.onclick=(ev)=>{
-          if(ev.altKey)downloadAttachment(m.messageId,a.attachmentId,a.filename,a.mimeType);
-          else previewAttachment(m.messageId,a.attachmentId,a.filename,a.mimeType);
-        };
+        row.title="Cliquer pour prévisualiser";
+        row.onclick=()=>previewAttachment(m.messageId,a.attachmentId,a.filename,a.mimeType);
         att.appendChild(row);
       });
       bub.appendChild(att);
