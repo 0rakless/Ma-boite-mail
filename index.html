@@ -779,8 +779,15 @@ async function openThread(t){
         txt=txt.replace(/<style[\s\S]*?<\/style>/gi," ");
         txt=txt.replace(/<script[\s\S]*?<\/script>/gi," ");
         txt=txt.replace(/<head[\s\S]*?<\/head>/gi," ");
+        // Convert structural/block tags to line breaks BEFORE stripping all tags,
+        // so table rows, paragraphs, and divs don't collapse into one run-on line.
+        txt=txt.replace(/<br\s*\/?>/gi,"\n");
+        txt=txt.replace(/<\/(p|div|tr|li|h[1-6])>/gi,"\n");
+        txt=txt.replace(/<(p|div|tr|li|h[1-6])[^>]*>/gi,"\n");
+        txt=txt.replace(/<\/td>/gi,"  "); // separate table cells with spacing, same row
+        txt=txt.replace(/<\/table>/gi,"\n");
         // Remove remaining HTML tags
-        txt=txt.replace(/<[^>]*>/g," ");
+        txt=txt.replace(/<[^>]*>/g,"");
         // Decode HTML entities
         const el=document.createElement("div");el.innerHTML=txt;txt=el.textContent||el.innerText||"";
         // Remove embedded image references like [cid:image001.jpg@...]
