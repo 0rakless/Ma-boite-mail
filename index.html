@@ -179,6 +179,7 @@ const P=["#7C6BDE","#4FABD6","#56C4A8","#E07B6A","#C46BBF","#D4A843","#5D8EE0"];
 const hue=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%P.length;return P[h]};
 const ini=n=>n.split(/\s+/).slice(0,2).map(w=>w[0]?.toUpperCase()||"").join("");
 const tl=iso=>{if(!iso)return"";const d=new Date(iso),now=new Date(),s=(now-d)/1000;if(s<3600)return`${Math.floor(s/60)}m`;if(s<86400)return d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});if(s<604800)return d.toLocaleDateString("fr-FR",{weekday:"short"});return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"short"})};
+const tlFull=iso=>{if(!iso)return"";const d=new Date(iso);return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric"})+" à "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});};
 const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
 let token=null, threads=[], sel=null, allMsgs=[], nextPageToken=null, curFolder="INBOX";
@@ -550,7 +551,7 @@ function renderMsgs(c){
     w.className="bw "+(m.mine?"mine":"theirs");
     if(!m.mine){const sr=document.createElement("div");sr.className="srow";sr.innerHTML=`<div class="mav" style="background:${c}">${ini(m.name)}</div><span class="sname">${esc(m.name)}</span>`;w.appendChild(sr);}
     const bub=document.createElement("div");bub.className="bub "+(m.mine?"mine":"theirs");bub.textContent=m.body;w.appendChild(bub);
-    const bt=document.createElement("div");bt.className="btime";bt.textContent=tl(m.t);w.appendChild(bt);
+    const bt=document.createElement("div");bt.className="btime";bt.textContent=tlFull(m.t);w.appendChild(bt);
     container.appendChild(w);
   });
   container.scrollTop=9999;
