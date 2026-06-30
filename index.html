@@ -1218,7 +1218,10 @@ async function sendNew(){
       renderComposeAttachPreview();
       st.innerHTML='<span class="sent-flash" style="display:inline-flex;align-items:center;gap:5px;color:#1D9E75;font-weight:600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Envoyé !</span>';
       setTimeout(()=>{ const el=st.querySelector(".sent-flash"); if(el)el.classList.add("fade-out"); },1200);
-      setTimeout(()=>{ if(st) st.innerHTML=""; },1700);
+      setTimeout(()=>{
+        document.getElementById("main").innerHTML='<div class="empty"><div style="font-size:38px">✉️</div><div style="font-size:14px;font-weight:500">Sélectionnez une conversation</div></div>';
+        sel=null; renderList();
+      },1700);
     }else st.innerHTML='<span style="color:#E05C5C">✗ Erreur</span>';
   }catch{st.innerHTML='<span style="color:#E05C5C">✗ Erreur réseau</span>';}
   sendBtn.disabled=false;
