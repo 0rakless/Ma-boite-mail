@@ -686,11 +686,9 @@ async function openThread(t){
     <div class="mh-left"><div class="mh-title">${esc(t.subj)}</div><div class="mh-sub">${esc(t.name)} · ${esc(t.email)}</div></div>
     <div class="mh-actions">
       <button class="label-btn" onclick="showLabelMenu(window._selThread)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-1px"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Étiquette</button>
-      <button class="sum-btn" id="sumBtn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Résumer</button>
       <button class="label-btn" id="deleteBtn" style="color:#E05C5C" title="${curFolder==='TRASH'?'Supprimer définitivement':'Mettre à la corbeille'}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-1px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>${curFolder==='TRASH'?'Supprimer':'Corbeille'}</button>
     </div>
   </div>
-  <div class="sum-box" id="sumBox"><div class="sum-lbl">Résumé IA</div><div id="sumTxt"></div><button class="sum-x" id="sumX">×</button></div>
   <div class="msgs" id="msgs"><div class="loading">Chargement…</div></div>
   <div class="rbar">
     <div id="attachPreview" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
@@ -716,8 +714,6 @@ async function openThread(t){
   document.getElementById("scheduleBtn").onclick=()=>toggleScheduleBox(t);
 
   window._selThread=t;
-  document.getElementById("sumX").onclick=()=>document.getElementById("sumBox").classList.remove("vis");
-  document.getElementById("sumBtn").onclick=()=>summarise();
   document.getElementById("deleteBtn").onclick=()=>deleteThread(t);
   document.getElementById("sendBtn").onclick=()=>sendReply(t);
   // Enter inserts a newline naturally (textarea default); use the send button to send.
@@ -1005,17 +1001,6 @@ async function checkScheduledEmails(){
   if(changed)saveScheduled(list);
 }
 setInterval(checkScheduledEmails,60000);
-
-async function summarise(){
-  const convo=allMsgs.map(m=>`${m.name}: ${m.body}`).join("\n\n");
-  document.getElementById("sumTxt").textContent="Génération…";
-  document.getElementById("sumBox").classList.add("vis");
-  try{
-    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:300,system:"Résume en 2-3 phrases en français, de façon concise.",messages:[{role:"user",content:`Résume:\n\n${convo}`}]})});
-    const d=await r.json();
-    document.getElementById("sumTxt").textContent=d.content?.filter(b=>b.type==="text").map(b=>b.text).join("")||"Résumé indisponible.";
-  }catch{document.getElementById("sumTxt").textContent="Résumé indisponible.";}
-}
 
 function showCompose(){
   sel=null;renderList();
