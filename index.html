@@ -266,6 +266,61 @@ async function gFetch(path,opts={}){
   return r.json();
 }
 
+function fileToBase64(file){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>resolve(r.result.split(",")[1]);
+    r.onerror=reject;
+    r.readAsDataURL(file);
+  });
+}
+
+async function makeRawWithAttachments({to,subject,body,replyToMessageId,files}){
+  if(!files||!files.length){
+    return makeRaw({to,subject,body,replyToMessageId});
+  }
+  const boundary="boundary_"+Date.now().toString(36);
+  let lines=[
+    `To: ${to}`,
+    `Subject: =?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`,
+    "MIME-Version: 1.0",
+  ];
+  if(replyToMessageId)lines.push(`In-Reply-To: ${replyToMessageId}`,`References: ${replyToMessageId}`);
+  lines.push(`Content-Type: multipart/mixed; boundary="${boundary}"`,"","--"+boundary,
+    "Content-Type: text/plain; charset=utf-8","",body,"");
+  for(const file of files){
+    const b64=await fileToBase64(file);
+    lines.push("--"+boundary,
+      `Content-Type: ${file.type||"application/octet-stream"}; name="${file.name}"`,
+      "Content-Transfer-Encoding: base64",
+      `Content-Disposition: attachment; filename="${file.name}"`,
+      "",
+      b64.match(/.{1,76}/g).join("\r\n"),
+      "");
+  }
+  lines.push("--"+boundary+"--");
+  const raw=lines.join("\r\n");
+  return btoa(unescape(encodeURIComponent(raw))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+
+function renderAttachPreview(){
+  const box=document.getElementById("attachPreview");
+  if(!box)return;
+  const files=window._pendingFiles||[];
+  if(!files.length){box.style.display="none";box.innerHTML="";return;}
+  box.style.display="flex";
+  box.innerHTML=files.map((f,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;background:#EEEFFE;color:#5B5FEF;border-radius:9px;padding:5px 9px;font-size:11px">
+      <span style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name)}</span>
+      <span style="opacity:.6">${fmtSize(f.size)}</span>
+      <button onclick="removePendingFile(${i})" style="background:none;border:none;color:#5B5FEF;cursor:pointer;font-size:14px;line-height:1;padding:0">×</button>
+    </div>`).join("");
+}
+function removePendingFile(i){
+  window._pendingFiles.splice(i,1);
+  renderAttachPreview();
+}
+
 function makeRaw({to,subject,body,replyToMessageId}){
   const lines=[`To: ${to}`,`Subject: =?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`,"Content-Type: text/plain; charset=utf-8","MIME-Version: 1.0","",body];
   if(replyToMessageId)lines.splice(2,0,`In-Reply-To: ${replyToMessageId}`,`References: ${replyToMessageId}`);
@@ -466,12 +521,22 @@ async function openThread(t){
   <div class="sum-box" id="sumBox"><div class="sum-lbl">Résumé IA</div><div id="sumTxt"></div><button class="sum-x" id="sumX">×</button></div>
   <div class="msgs" id="msgs"><div class="loading">Chargement…</div></div>
   <div class="rbar">
+    <div id="attachPreview" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
     <div class="rrow">
+      <input type="file" id="fileInput" multiple style="display:none">
+      <button id="attachBtn" title="Joindre un fichier" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#5B5FEF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
       <textarea class="rinput" id="ri" placeholder="Répondre… (Entrée pour envoyer)" rows="1"></textarea>
       <button class="send-btn" id="sendBtn">↑</button>
     </div>
     <div class="st" id="st"></div>
   </div>`;
+
+  window._pendingFiles=[];
+  document.getElementById("attachBtn").onclick=()=>document.getElementById("fileInput").click();
+  document.getElementById("fileInput").onchange=e=>{
+    window._pendingFiles=[...window._pendingFiles,...Array.from(e.target.files)];
+    renderAttachPreview();
+  };
 
   window._selThread=t;
   document.getElementById("sumX").onclick=()=>document.getElementById("sumBox").classList.remove("vis");
@@ -541,7 +606,16 @@ async function openThread(t){
         txt=txt.replace(/[ \t]{2,}/g," ").replace(/\n{3,}/g,"\n\n").trim();
         return txt;
       }
-      return{messageId:msg.id,mine:isMe,name:nm?nm[1].replace(/"/g,"").trim():from,body:cleanBody(getBody(msg.payload)).slice(0,1000),t:new Date(parseInt(msg.internalDate||Date.now())).toISOString()};
+      function getAttachments(p,out){
+        out=out||[];
+        if(!p)return out;
+        if(p.filename&&p.filename.length>0&&p.body?.attachmentId){
+          out.push({filename:p.filename,mimeType:p.mimeType||"application/octet-stream",attachmentId:p.body.attachmentId,size:p.body.size||0});
+        }
+        if(p.parts)for(const x of p.parts)getAttachments(x,out);
+        return out;
+      }
+      return{messageId:msg.id,mine:isMe,name:nm?nm[1].replace(/"/g,"").trim():from,body:cleanBody(getBody(msg.payload)).slice(0,1000),t:new Date(parseInt(msg.internalDate||Date.now())).toISOString(),attachments:getAttachments(msg.payload)};
     });
     renderMsgs(c);
   }catch(e){document.getElementById("msgs").innerHTML='<div class="loading">Erreur</div>';}
@@ -558,7 +632,51 @@ function prettifyBody(txt){
   return txt.trim();
 }
 
-function renderMsgs(c){
+function fileIcon(mime,name){
+  const ext=(name||"").split(".").pop().toLowerCase();
+  if(mime?.startsWith("image/"))return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>`;
+  if(mime==="application/pdf"||ext==="pdf")return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`;
+}
+function fmtSize(b){if(!b)return"";if(b<1024)return b+" o";if(b<1048576)return Math.round(b/1024)+" Ko";return (b/1048576).toFixed(1)+" Mo";}
+
+async function downloadAttachment(messageId,attachmentId,filename,mimeType){
+  try{
+    const data=await gFetch(`messages/${messageId}/attachments/${attachmentId}`);
+    if(!data.data)return;
+    const b64=data.data.replace(/-/g,"+").replace(/_/g,"/");
+    const byteChars=atob(b64);
+    const bytes=new Uint8Array(byteChars.length);
+    for(let i=0;i<byteChars.length;i++)bytes[i]=byteChars.charCodeAt(i);
+    const blob=new Blob([bytes],{type:mimeType});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+  }catch(e){alert("Erreur lors du téléchargement de la pièce jointe.");}
+}
+
+async function previewAttachment(messageId,attachmentId,filename,mimeType){
+  try{
+    const data=await gFetch(`messages/${messageId}/attachments/${attachmentId}`);
+    if(!data.data)return;
+    const b64=data.data.replace(/-/g,"+").replace(/_/g,"/");
+    if(mimeType.startsWith("image/")||mimeType==="application/pdf"){
+      const byteChars=atob(b64);
+      const bytes=new Uint8Array(byteChars.length);
+      for(let i=0;i<byteChars.length;i++)bytes[i]=byteChars.charCodeAt(i);
+      const blob=new Blob([bytes],{type:mimeType});
+      const url=URL.createObjectURL(blob);
+      window.open(url,"_blank");
+      setTimeout(()=>URL.revokeObjectURL(url),60000);
+    }else{
+      downloadAttachment(messageId,attachmentId,filename,mimeType);
+    }
+  }catch(e){alert("Erreur lors de l'ouverture de la pièce jointe.");}
+}
+
+
   const container=document.getElementById("msgs");if(!container)return;
   container.innerHTML="";
   allMsgs.forEach(m=>{
@@ -566,6 +684,23 @@ function renderMsgs(c){
     w.className="bw "+(m.mine?"mine":"theirs");
     if(!m.mine){const sr=document.createElement("div");sr.className="srow";sr.innerHTML=`<div class="mav" style="background:${c}">${ini(m.name)}</div><span class="sname">${esc(m.name)}</span>`;w.appendChild(sr);}
     const bub=document.createElement("div");bub.className="bub "+(m.mine?"mine":"theirs");bub.textContent=m.mine?prettifyBody(m.body):m.body;w.appendChild(bub);
+    if(m.attachments&&m.attachments.length){
+      const att=document.createElement("div");
+      att.className="att-list";
+      att.style.cssText="display:flex;flex-direction:column;gap:5px;margin-top:6px;max-width:65%";
+      m.attachments.forEach(a=>{
+        const row=document.createElement("div");
+        row.style.cssText=`display:flex;align-items:center;gap:7px;background:${m.mine?'#4A4DD9':'#E8E8E8'};color:${m.mine?'#fff':'#1C1C1E'};border-radius:10px;padding:7px 10px;font-size:11px;cursor:pointer`;
+        row.innerHTML=`${fileIcon(a.mimeType,a.filename)}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.filename)}</span><span style="opacity:.7;font-size:10px">${fmtSize(a.size)}</span>`;
+        row.title="Cliquer pour ouvrir, Alt+clic pour télécharger";
+        row.onclick=(ev)=>{
+          if(ev.altKey)downloadAttachment(m.messageId,a.attachmentId,a.filename,a.mimeType);
+          else previewAttachment(m.messageId,a.attachmentId,a.filename,a.mimeType);
+        };
+        att.appendChild(row);
+      });
+      w.appendChild(att);
+    }
     const bt=document.createElement("div");bt.className="btime";bt.textContent=tlFull(m.t);w.appendChild(bt);
     container.appendChild(w);
   });
@@ -574,17 +709,19 @@ function renderMsgs(c){
 
 async function sendReply(t){
   const inp=document.getElementById("ri"),val=inp.value.trim(),st=document.getElementById("st");
-  if(!val)return;
-  document.getElementById("sendBtn").disabled=true;st.innerHTML="";
+  const files=window._pendingFiles||[];
+  if(!val&&!files.length)return;
+  document.getElementById("sendBtn").disabled=true;st.innerHTML=files.length?"Envoi avec pièce(s) jointe(s)…":"";
   const last=allMsgs[allMsgs.length-1];
   try{
-    const raw=makeRaw({to:t.email,subject:`Re: ${t.subj}`,body:val,replyToMessageId:last?.messageId});
+    const raw=await makeRawWithAttachments({to:t.email,subject:`Re: ${t.subj}`,body:val,replyToMessageId:last?.messageId,files});
     const payload={raw};if(t.threadId)payload.threadId=t.threadId;
     const res=await gFetch("messages/send",{method:"POST",body:JSON.stringify(payload)});
     if(res.id){
       st.innerHTML='<span style="color:#34C68A">✓ Envoyé !</span>';
-      allMsgs.push({mine:true,name:"Moi",body:val,t:new Date().toISOString()});
-      inp.value="";renderMsgs(hue(t.name));
+      const attMeta=files.map(f=>({filename:f.name,mimeType:f.type,size:f.size}));
+      allMsgs.push({mine:true,name:"Moi",body:val,t:new Date().toISOString(),attachments:[]});
+      inp.value="";window._pendingFiles=[];renderAttachPreview();renderMsgs(hue(t.name));
     }else st.innerHTML='<span style="color:#E05C5C">✗ Erreur</span>';
   }catch{st.innerHTML='<span style="color:#E05C5C">✗ Erreur réseau</span>';}
   document.getElementById("sendBtn").disabled=false;
