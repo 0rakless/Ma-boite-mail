@@ -815,7 +815,7 @@ function prettifyBody(txt){
   txt=txt.replace(new RegExp("\\n?("+signoffs+")","gi"), "\n\n$1");
 
   // Put a line break before a phone number / email / company name that follows directly after a name on the same line
-  txt=txt.replace(/([a-zà-öø-ÿ])\s+(\d{2}(?:[\s.]?\d{2}){4})/gi, "$1\n$2"); // phone numbers
+  txt=txt.replace(/([a-zà-öø-ÿ])\s+(0\d(?:[\s.]\d{2}){4})/gi, "$1\n$2"); // French phone numbers (with real separators)
   txt=txt.replace(/([a-zà-öø-ÿ])\s+([\w.+-]+@[\w-]+\.[a-z]{2,})/gi, "$1\n$2"); // emails
 
   // Collapse excessive blank lines and trim
