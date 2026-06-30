@@ -812,10 +812,11 @@ async function openThread(t){
         txt=txt.replace(/<style[\s\S]*?<\/style>/gi," ");
         txt=txt.replace(/<script[\s\S]*?<\/script>/gi," ");
         txt=txt.replace(/<head[\s\S]*?<\/head>/gi," ");
-        // Convert structural/block tags to line breaks BEFORE stripping all tags,
-        // so table rows, paragraphs, and divs don't collapse into one run-on line.
+        // Convert structural/block tags to a SINGLE line break BEFORE stripping all tags,
+        // so table rows, paragraphs, and divs don't collapse into one run-on line,
+        // but also don't create extra blank lines (only opening tag becomes a break).
         txt=txt.replace(/<br\s*\/?>/gi,"\n");
-        txt=txt.replace(/<\/(p|div|tr|li|h[1-6])>/gi,"\n");
+        txt=txt.replace(/<\/(p|div|tr|li|h[1-6])>/gi,"");
         txt=txt.replace(/<(p|div|tr|li|h[1-6])[^>]*>/gi,"\n");
         txt=txt.replace(/<\/td>/gi,"  "); // separate table cells with spacing, same row
         txt=txt.replace(/<\/table>/gi,"\n");
@@ -829,6 +830,8 @@ async function openThread(t){
         txt=txt.replace(/Pensez\s+à\s+l['’]environnement\s+avant\s+d['’]imprimer\s+ce\s+message\.?/gi,"");
         // Remove quoted reply lines (lines starting with >)
         txt=txt.split("\n").filter(l=>!l.trim().startsWith(">")).join("\n");
+        // Drop lines that are now empty/whitespace-only (leftover from tag conversion)
+        txt=txt.split("\n").map(l=>l.replace(/\s+$/,"")).join("\n");
         // Cut off at the start of a quoted email chain (French & English clients)
         const cutMarkers=[
           /Le\s.+?\s(?:a\s)?écrit\s*:/i,
@@ -846,8 +849,8 @@ async function openThread(t){
           if(m&&m.index<cutIdx)cutIdx=m.index;
         }
         txt=txt.slice(0,cutIdx);
-        // Collapse multiple blank lines and excess whitespace
-        txt=txt.replace(/[ \t]{2,}/g," ").replace(/\n{3,}/g,"\n\n").trim();
+        // Collapse multiple blank lines and excess whitespace (compact like Gmail's rendering)
+        txt=txt.replace(/[ \t]{2,}/g," ").replace(/\n{2,}/g,"\n").trim();
         return txt;
       }
       function getAttachments(p,out){
