@@ -6,19 +6,19 @@
 <title>Ma Boîte Mail</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:#F7F6F3;height:100vh;overflow:hidden;font-size:13px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:#FFF6F1;height:100vh;overflow:hidden;font-size:13px}
 .app{display:flex;height:100vh}
 
 /* SIDEBAR */
 .sb{width:260px;min-width:160px;max-width:460px;background:#fff;display:flex;flex-direction:column;border-right:1px solid #EBEBEB;flex-shrink:0;position:relative}
 .resize-handle{position:absolute;right:-4px;top:0;bottom:0;width:8px;cursor:col-resize;z-index:10;display:flex;align-items:center;justify-content:center}
-.resize-handle:hover .resize-bar,.resize-handle.dragging .resize-bar{background:#5B5FEF}
+.resize-handle:hover .resize-bar,.resize-handle.dragging .resize-bar{background:#E8593C}
 .resize-bar{width:3px;height:48px;border-radius:3px;background:#DDDCDC;transition:background .15s}
 .sb-top{padding:14px 12px 8px}
-.sb-title{font-size:16px;font-weight:700;color:#1C1C1E;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
-.nbtn{background:#5B5FEF;color:#fff;border:none;border-radius:8px;padding:5px 11px;font-size:11px;font-weight:600;cursor:pointer}
+.sb-title{font-size:16px;font-weight:700;color:#1A1612;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.nbtn{background:#E8593C;color:#fff;border:none;border-radius:8px;padding:5px 11px;font-size:11px;font-weight:600;cursor:pointer}
 .srch-wrap{position:relative;margin-bottom:4px}
-.srch{width:100%;padding:7px 10px 7px 30px;border-radius:8px;border:1px solid #EBEBEB;background:#F7F6F3;font-size:12px;outline:none;color:#1C1C1E}
+.srch{width:100%;padding:7px 10px 7px 30px;border-radius:8px;border:1px solid #EBEBEB;background:#FFF6F1;font-size:12px;outline:none;color:#1A1612}
 .srch-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#ABABAB;font-size:13px;pointer-events:none}
 .srch-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:#ABABAB;cursor:pointer;font-size:14px;display:none}
 
@@ -26,14 +26,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;ba
 .folders{padding:6px 8px;border-bottom:1px solid #EBEBEB}
 .folder{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:7px;cursor:pointer;font-size:12px;color:#444;font-weight:500}
 .folder:hover{background:#F5F4F0}
-.folder.on{background:#EEEFFE;color:#5B5FEF;font-weight:600}
+.folder.on{background:#FDEAE3;color:#E8593C;font-weight:600}
 .folder-icon{font-size:14px;width:16px;text-align:center}
-.folder-count{margin-left:auto;font-size:10px;background:#5B5FEF;color:#fff;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}
+.folder-count{margin-left:auto;font-size:10px;background:#E8593C;color:#fff;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}
 
 /* LABELS */
 .labels-section{padding:6px 8px;border-bottom:1px solid #EBEBEB}
 .labels-title{font-size:10px;color:#ABABAB;font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:4px 8px;display:flex;justify-content:space-between;align-items:center}
-.label-add{background:none;border:none;color:#5B5FEF;cursor:pointer;font-size:16px;line-height:1}
+.label-add{background:none;border:none;color:#E8593C;cursor:pointer;font-size:16px;line-height:1}
 .label-item{display:flex;align-items:center;gap:7px;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:12px;color:#444}
 .label-item:hover{background:#F5F4F0}
 .label-item.on{background:#F5F4F0;font-weight:600}
@@ -44,49 +44,49 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;ba
 .tlist{flex:1;overflow-y:auto}
 .ti{display:flex;gap:8px;padding:9px 12px;cursor:pointer;border-left:3px solid transparent;transition:background .1s;align-items:flex-start}
 .ti:hover{background:#F5F4F0}
-.ti.on{background:#EEEFFE;border-left-color:#5B5FEF}
-.ti.unread{background:#F3F2FF;border-left-color:#C9C7F5}
-.ti.unread.on{background:#EEEFFE;border-left-color:#5B5FEF}
+.ti.on{background:#FDEAE3;border-left-color:#E8593C}
+.ti.unread{background:#FDEAE3;border-left-color:#F0C4B5}
+.ti.unread.on{background:#FDEAE3;border-left-color:#E8593C}
 .ti.checked{background:#FFF3E0}
 .ti-check{width:16px;height:16px;border-radius:5px;border:1.5px solid #D5D3D3;flex-shrink:0;margin-top:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#fff}
-.ti-check.checked{background:#5B5FEF;border-color:#5B5FEF}
-.bulk-bar{display:none;align-items:center;gap:10px;padding:8px 14px;background:#1C1C1E;color:#fff;font-size:12px}
+.ti-check.checked{background:#E8593C;border-color:#E8593C}
+.bulk-bar{display:none;align-items:center;gap:10px;padding:8px 14px;background:#1A1612;color:#fff;font-size:12px}
 .bulk-bar.vis{display:flex}
 .bulk-btn{background:#E05C5C;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px}
 .bulk-cancel{background:none;border:none;color:#ABABAB;font-size:11px;cursor:pointer;margin-left:auto}
 .av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
 .ti-info{flex:1;min-width:0}
-.ti-name{font-size:12px;font-weight:500;color:#1C1C1E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ti-name{font-size:12px;font-weight:500;color:#1A1612;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ti-name.u{font-weight:700;color:#3730A3}
 .ti-subj{font-size:11px;color:#8A8A8E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ti-subj.u{color:#5B5FEF;font-weight:600}
+.ti-subj.u{color:#E8593C;font-weight:600}
 .ti-snip{font-size:10px;color:#ABABAB;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
 .ti-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
 .ti-time{font-size:10px;color:#ABABAB}
-.udot{width:7px;height:7px;border-radius:50%;background:#5B5FEF;box-shadow:0 0 0 2px #EEEFFE}
+.udot{width:7px;height:7px;border-radius:50%;background:#E8593C;box-shadow:0 0 0 2px #FDEAE3}
 .ti-labels{display:flex;gap:3px;flex-wrap:wrap;margin-top:2px}
 .ti-label{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:600}
-.load-more{text-align:center;padding:10px;font-size:11px;color:#5B5FEF;cursor:pointer;font-weight:600}
+.load-more{text-align:center;padding:10px;font-size:11px;color:#E8593C;cursor:pointer;font-weight:600}
 .load-more:hover{text-decoration:underline}
 
 /* AUTH */
 .auth-zone{padding:10px 12px;border-top:1px solid #EBEBEB}
-.auth-btn{width:100%;background:#5B5FEF;color:#fff;border:none;border-radius:8px;padding:8px;font-size:12px;font-weight:600;cursor:pointer}
+.auth-btn{width:100%;background:#E8593C;color:#fff;border:none;border-radius:8px;padding:8px;font-size:12px;font-weight:600;cursor:pointer}
 .connected{font-size:11px;color:#34C68A;font-weight:600;display:flex;align-items:center;gap:6px}
-.refresh-btn{background:none;border:1px solid #EBEBEB;color:#5B5FEF;border-radius:7px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer}
+.refresh-btn{background:none;border:1px solid #EBEBEB;color:#E8593C;border-radius:7px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer}
 
 /* MAIN */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 .mh{padding:12px 20px;background:#fff;border-bottom:1px solid #EBEBEB;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;gap:10px}
 .mh-left{min-width:0;flex:1}
-.mh-title{font-size:14px;font-weight:700;color:#1C1C1E;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mh-title{font-size:14px;font-weight:700;color:#1A1612;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mh-sub{font-size:10px;color:#8A8A8E;margin-top:2px}
 .mh-actions{display:flex;gap:6px;flex-shrink:0}
-.sum-btn{background:#EEEFFE;color:#5B5FEF;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.sum-btn{background:#FDEAE3;color:#E8593C;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
 .label-btn{background:#F5F4F0;color:#444;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
-.sum-box{margin:8px 20px 0;padding:10px 14px;background:#F0EFFF;border-radius:10px;font-size:11.5px;color:#4A4A8A;line-height:1.65;position:relative;display:none;flex-shrink:0}
+.sum-box{margin:8px 20px 0;padding:10px 14px;background:#FDEAE3;border-radius:10px;font-size:11.5px;color:#8A4A36;line-height:1.65;position:relative;display:none;flex-shrink:0}
 .sum-box.vis{display:block}
-.sum-lbl{font-size:9px;color:#5B5FEF;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:4px}
+.sum-lbl{font-size:9px;color:#E8593C;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:4px}
 .sum-x{position:absolute;top:8px;right:12px;background:none;border:none;color:#8A8A8E;cursor:pointer;font-size:14px}
 .msgs{flex:1;overflow-y:auto;padding:14px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
 .bw{display:flex;flex-direction:column;width:100%}
@@ -96,31 +96,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;ba
 .mav{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0}
 .sname{font-size:10.5px;color:#8A8A8E}
 .bub{max-width:65%;padding:10px 14px;font-size:13px;line-height:1.6;word-break:break-word;white-space:pre-wrap}
-.bub.mine{background:#5B5FEF;color:#fff;border-radius:16px 16px 4px 16px}
-.bub.theirs{background:#F0F0F0;color:#1C1C1E;border-radius:16px 16px 16px 4px}
+.bub.mine{background:#E8593C;color:#FFF6F1;border-radius:16px 16px 4px 16px}
+.bub.theirs{background:#1D9E75;color:#FFF6F1;border-radius:16px 16px 16px 4px}
 .btime{font-size:10px;color:#ABABAB;margin-top:4px}
 .rbar{padding:10px 20px 12px;background:#fff;border-top:1px solid #EBEBEB;flex-shrink:0}
 .rrow{display:flex;gap:8px;align-items:flex-end}
-.rinput{flex:1;resize:vertical;padding:11px 14px;border-radius:14px;border:1px solid #EBEBEB;background:#F7F6F3;font-size:13px;color:#1C1C1E;outline:none;min-height:90px;max-height:340px;line-height:1.55;font-family:inherit}
-.send-btn{background:#5B5FEF;color:#fff;border:none;border-radius:11px;width:40px;height:40px;font-size:17px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.rinput{flex:1;resize:vertical;padding:11px 14px;border-radius:14px;border:1px solid #EBEBEB;background:#FFF6F1;font-size:13px;color:#1A1612;outline:none;min-height:90px;max-height:340px;line-height:1.55;font-family:inherit}
+.send-btn{background:#E8593C;color:#fff;border:none;border-radius:11px;width:40px;height:40px;font-size:17px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .send-btn:disabled{opacity:.4;cursor:default}
 .st{height:16px;margin-top:4px;font-size:11px}
 .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#8A8A8E;gap:8px}
 .compose-wrap{flex:1;padding:20px;display:flex;flex-direction:column;gap:10px;overflow:auto}
-.inp{width:100%;padding:10px 14px;border-radius:10px;border:1px solid #EBEBEB;background:#F7F6F3;font-size:13px;color:#1C1C1E;outline:none;font-family:inherit}
+.inp{width:100%;padding:10px 14px;border-radius:10px;border:1px solid #EBEBEB;background:#FFF6F1;font-size:13px;color:#1A1612;outline:none;font-family:inherit}
 .loading{padding:30px;text-align:center;color:#8A8A8E;font-size:13px}
 
 /* SEARCH RESULTS */
-.search-info{padding:8px 12px;font-size:11px;color:#8A8A8E;border-bottom:1px solid #EBEBEB;background:#F7F6F3}
+.search-info{padding:8px 12px;font-size:11px;color:#8A8A8E;border-bottom:1px solid #EBEBEB;background:#FFF6F1}
 
 /* MODAL */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;z-index:100}
 .modal{background:#fff;border-radius:14px;padding:20px;width:300px;box-shadow:0 8px 30px rgba(0,0,0,.15)}
-.modal-title{font-size:15px;font-weight:700;color:#1C1C1E;margin-bottom:14px}
+.modal-title{font-size:15px;font-weight:700;color:#1A1612;margin-bottom:14px}
 .modal-inp{width:100%;padding:9px 12px;border-radius:8px;border:1px solid #EBEBEB;font-size:13px;outline:none;font-family:inherit;margin-bottom:10px}
 .color-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .color-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent}
-.color-dot.sel{border-color:#1C1C1E}
+.color-dot.sel{border-color:#1A1612}
 .modal-btns{display:flex;gap:8px;justify-content:flex-end}
 .modal-btn{padding:7px 16px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer}
 </style>
@@ -191,7 +191,7 @@ const CLIENT_ID="503752573647-0mo2us3ukmg3dbnuvj9mc3db6bdlk029.apps.googleuserco
 const SCOPES="https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly";
 const REDIRECT="https://0rakless.github.io/Ma-boite-mail/";
 
-const COLORS=["#E07B6A","#5B5FEF","#34C68A","#F5A623","#C46BBF","#4FABD6","#7C6BDE","#56C4A8"];
+const COLORS=["#E07B6A","#E8593C","#34C68A","#F5A623","#C46BBF","#4FABD6","#7C6BDE","#56C4A8"];
 const P=["#7C6BDE","#4FABD6","#56C4A8","#E07B6A","#C46BBF","#D4A843","#5D8EE0"];
 const hue=n=>{let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%P.length;return P[h]};
 const ini=n=>n.split(/\s+/).slice(0,2).map(w=>w[0]?.toUpperCase()||"").join("");
@@ -200,7 +200,7 @@ const tlFull=iso=>{if(!iso)return"";const d=new Date(iso);return d.toLocaleDateS
 const esc=s=>(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
 let token=null, threads=[], sel=null, allMsgs=[], nextPageToken=null, curFolder="INBOX";
-let labels=JSON.parse(localStorage.getItem("mailLabels")||'[{"id":"unread","name":"Non lu","color":"#5B5FEF"},{"id":"urgent","name":"Urgent","color":"#E07B6A"}]');
+let labels=JSON.parse(localStorage.getItem("mailLabels")||'[{"id":"unread","name":"Non lu","color":"#E8593C"},{"id":"urgent","name":"Urgent","color":"#E07B6A"}]');
 let threadLabels=JSON.parse(localStorage.getItem("threadLabels")||'{}');
 let searchMode=false, searchQuery="";
 
@@ -411,10 +411,10 @@ function renderAttachPreview(){
   if(!files.length){box.style.display="none";box.innerHTML="";return;}
   box.style.display="flex";
   box.innerHTML=files.map((f,i)=>`
-    <div style="display:flex;align-items:center;gap:6px;background:#EEEFFE;color:#5B5FEF;border-radius:9px;padding:5px 9px;font-size:11px">
+    <div style="display:flex;align-items:center;gap:6px;background:#FDEAE3;color:#E8593C;border-radius:9px;padding:5px 9px;font-size:11px">
       <span style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name)}</span>
       <span style="opacity:.6">${fmtSize(f.size)}</span>
-      <button onclick="removePendingFile(${i})" style="background:none;border:none;color:#5B5FEF;cursor:pointer;font-size:14px;line-height:1;padding:0">×</button>
+      <button onclick="removePendingFile(${i})" style="background:none;border:none;color:#E8593C;cursor:pointer;font-size:14px;line-height:1;padding:0">×</button>
     </div>`).join("");
 }
 function removePendingFile(i){
@@ -622,7 +622,7 @@ function showAddLabel(){
     <div class="color-row">${COLORS.map(c=>`<div class="color-dot${c===selColor?" sel":""}" style="background:${c}" data-c="${c}" onclick="this.parentNode.querySelectorAll('.color-dot').forEach(x=>x.classList.remove('sel'));this.classList.add('sel');window._lc='${c}'"></div>`).join("")}</div>
     <div class="modal-btns">
       <button class="modal-btn" style="background:#F5F4F0;color:#444" onclick="this.closest('.modal-bg').remove()">Annuler</button>
-      <button class="modal-btn" style="background:#5B5FEF;color:#fff" onclick="createLabel()">Créer</button>
+      <button class="modal-btn" style="background:#E8593C;color:#fff" onclick="createLabel()">Créer</button>
     </div>
   </div>`;
   window._lc=selColor;
@@ -654,7 +654,7 @@ function showLabelMenu(t){
       </div>`;
     }).join("")}
     <div class="modal-btns" style="margin-top:10px">
-      <button class="modal-btn" style="background:#5B5FEF;color:#fff" onclick="this.closest('.modal-bg').remove()">Fermer</button>
+      <button class="modal-btn" style="background:#E8593C;color:#fff" onclick="this.closest('.modal-bg').remove()">Fermer</button>
     </div>
   </div>`;
   document.body.appendChild(menu);
@@ -696,10 +696,10 @@ async function openThread(t){
     <div id="scheduleBox" style="display:none;margin-bottom:8px"></div>
     <div class="rrow">
       <input type="file" id="fileInput" multiple style="display:none">
-      <button id="attachBtn" title="Joindre un fichier" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#5B5FEF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+      <button id="attachBtn" title="Joindre un fichier" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#E8593C"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
       <textarea class="rinput" id="ri" placeholder="Répondre…" rows="4"></textarea>
-      <button id="saveDraftBtn" title="Enregistrer en brouillon" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#5B5FEF"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button>
-      <button id="scheduleBtn" title="Programmer l'envoi" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#5B5FEF"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
+      <button id="saveDraftBtn" title="Enregistrer en brouillon" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#E8593C"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button>
+      <button id="scheduleBtn" title="Programmer l'envoi" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#E8593C"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
       <button class="send-btn" id="sendBtn">↑</button>
     </div>
     <div class="st" id="st"></div>
@@ -868,7 +868,7 @@ function renderMsgs(c){
       att.style.cssText="display:flex;flex-direction:column;gap:5px;margin-top:6px;max-width:65%";
       m.attachments.forEach(a=>{
         const row=document.createElement("div");
-        row.style.cssText=`display:flex;align-items:center;gap:7px;background:${m.mine?'#4A4DD9':'#E8E8E8'};color:${m.mine?'#fff':'#1C1C1E'};border-radius:10px;padding:7px 10px;font-size:11px;cursor:pointer`;
+        row.style.cssText=`display:flex;align-items:center;gap:7px;background:${m.mine?'#C84B30':'#E8E8E8'};color:${m.mine?'#fff':'#1A1612'};border-radius:10px;padding:7px 10px;font-size:11px;cursor:pointer`;
         row.innerHTML=`${fileIcon(a.mimeType,a.filename)}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.filename)}</span><span style="opacity:.7;font-size:10px">${fmtSize(a.size)}</span>`;
         row.title="Cliquer pour ouvrir, Alt+clic pour télécharger";
         row.onclick=(ev)=>{
@@ -938,11 +938,11 @@ function toggleScheduleBox(t){
   const timeStr=now.toTimeString().slice(0,5);
   box.style.display="block";
   box.innerHTML=`
-    <div style="background:#F0EFFF;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <span style="font-size:11px;color:#5B5FEF;font-weight:600">Programmer l'envoi :</span>
+    <div style="background:#FDEAE3;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:11px;color:#E8593C;font-weight:600">Programmer l'envoi :</span>
       <input type="date" id="schedDate" value="${dateStr}" style="padding:5px 8px;border-radius:7px;border:1px solid #D8D6FA;font-size:12px;outline:none">
       <input type="time" id="schedTime" value="${timeStr}" style="padding:5px 8px;border-radius:7px;border:1px solid #D8D6FA;font-size:12px;outline:none">
-      <button onclick="confirmSchedule(window._selThread)" style="background:#5B5FEF;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:600;cursor:pointer">Programmer</button>
+      <button onclick="confirmSchedule(window._selThread)" style="background:#E8593C;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:600;cursor:pointer">Programmer</button>
       <button onclick="document.getElementById('scheduleBox').style.display='none';document.getElementById('scheduleBox').innerHTML=''" style="background:none;border:none;color:#8A8A8E;font-size:11px;cursor:pointer">Annuler</button>
     </div>`;
 }
@@ -1028,12 +1028,12 @@ function showCompose(){
     <div id="scheduleBox" style="display:none"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
       <div style="display:flex;gap:8px">
-        <button id="cSaveDraftBtn" title="Enregistrer en brouillon" style="background:#F5F4F0;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;cursor:pointer;color:#5B5FEF;display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Brouillon</button>
-        <button id="cScheduleBtn" title="Programmer l'envoi" style="background:#F5F4F0;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;cursor:pointer;color:#5B5FEF;display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Programmer</button>
+        <button id="cSaveDraftBtn" title="Enregistrer en brouillon" style="background:#F5F4F0;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;cursor:pointer;color:#E8593C;display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Brouillon</button>
+        <button id="cScheduleBtn" title="Programmer l'envoi" style="background:#F5F4F0;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;cursor:pointer;color:#E8593C;display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Programmer</button>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <div id="cSt" style="font-size:11px"></div>
-        <button onclick="sendNew()" style="background:#5B5FEF;color:#fff;border:none;border-radius:10px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer">Envoyer ↑</button>
+        <button onclick="sendNew()" style="background:#E8593C;color:#fff;border:none;border-radius:10px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer">Envoyer ↑</button>
       </div>
     </div>
   </div>`;
