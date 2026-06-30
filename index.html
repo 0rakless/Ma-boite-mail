@@ -778,19 +778,20 @@ async function openThread(t){
       const get=n=>(msg.payload?.headers||[]).find(h=>h.name.toLowerCase()===n)?.value||"";
       const from=get("from"),nm=from.match(/^(.+?)\s*</);
       const isMe=(msg.labelIds||[]).includes("SENT");
+      function findPlain(part){
+        if(!part)return null;
+        if(part.mimeType==="text/plain"&&part.body?.data)try{return decodeURIComponent(escape(atob(part.body.data.replace(/-/g,"+").replace(/_/g,"/"))));}catch{return null;}
+        if(part.parts)for(const x of part.parts){const r=findPlain(x);if(r)return r;}
+        return null;
+      }
+      function findHtml(part){
+        if(!part)return null;
+        if(part.mimeType==="text/html"&&part.body?.data)try{return decodeURIComponent(escape(atob(part.body.data.replace(/-/g,"+").replace(/_/g,"/"))));}catch{return null;}
+        if(part.parts)for(const x of part.parts){const r=findHtml(x);if(r)return r;}
+        return null;
+      }
       function getBody(p){
         if(!p)return"";
-        // Prefer text/plain
-        function findPlain(part){
-          if(part.mimeType==="text/plain"&&part.body?.data)try{return decodeURIComponent(escape(atob(part.body.data.replace(/-/g,"+").replace(/_/g,"/"))));}catch{return null;}
-          if(part.parts)for(const x of part.parts){const r=findPlain(x);if(r)return r;}
-          return null;
-        }
-        function findHtml(part){
-          if(part.mimeType==="text/html"&&part.body?.data)try{return decodeURIComponent(escape(atob(part.body.data.replace(/-/g,"+").replace(/_/g,"/"))));}catch{return null;}
-          if(part.parts)for(const x of part.parts){const r=findHtml(x);if(r)return r;}
-          return null;
-        }
         const plain=findPlain(p);
         const html=findHtml(p);
         // If the plain-text version looks like one giant run-on line (few/no newlines
@@ -881,8 +882,8 @@ async function openThread(t){
         h=h.replace(/src=["']cid:[^"']*["']/gi, 'src=""');
         return h;
       }
-      const plainSrc=findPlain(p);
-      const htmlSrc=findHtml(p);
+      const plainSrc=findPlain(msg.payload);
+      const htmlSrc=findHtml(msg.payload);
       const rich = isRichHtml(htmlSrc);
       const rawBody = getBody(msg.payload);
       return{
