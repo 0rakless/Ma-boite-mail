@@ -515,8 +515,23 @@ async function openThread(t){
         const el=document.createElement("div");el.innerHTML=txt;txt=el.textContent||el.innerText||"";
         // Remove quoted reply lines (lines starting with >)
         txt=txt.split("\n").filter(l=>!l.trim().startsWith(">")).join("\n");
-        // Remove "On ... wrote:" lines
-        txt=txt.replace(/Le .+? a écrit\s*:/gi,"").replace(/On .+? wrote\s*:/gi,"");
+        // Cut off at the start of a quoted email chain (French & English clients)
+        const cutMarkers=[
+          /Le\s.+?\s(?:a\s)?écrit\s*:/i,
+          /On\s.+?\swrote\s*:/i,
+          /-{2,}\s*Message\s+(?:transféré|original)\s*-{2,}/i,
+          /-{2,}\s*Forwarded\s+message\s*-{2,}/i,
+          /^De\s*:\s/im,
+          /^From\s*:\s/im,
+          /^Envoyé\s*:\s/im,
+          /^Sent\s*:\s/im,
+        ];
+        let cutIdx=txt.length;
+        for(const re of cutMarkers){
+          const m=txt.match(re);
+          if(m&&m.index<cutIdx)cutIdx=m.index;
+        }
+        txt=txt.slice(0,cutIdx);
         // Collapse multiple blank lines and excess whitespace
         txt=txt.replace(/[ \t]{2,}/g," ").replace(/\n{3,}/g,"\n\n").trim();
         return txt;
