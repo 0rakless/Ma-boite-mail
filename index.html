@@ -155,7 +155,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;ba
       <div id="connectedZone" style="display:none">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <span class="connected">● Gmail connecté</span>
-          <button class="refresh-btn" id="refreshBtn">↻</button>
+          <div style="display:flex;gap:6px">
+            <button class="refresh-btn" id="refreshBtn">↻</button>
+            <button class="refresh-btn" id="logoutBtn" title="Se déconnecter">⏻</button>
+          </div>
         </div>
       </div>
     </div>
@@ -189,12 +192,40 @@ let labels=JSON.parse(localStorage.getItem("mailLabels")||'[{"id":"unread","name
 let threadLabels=JSON.parse(localStorage.getItem("threadLabels")||'{}');
 let searchMode=false, searchQuery="";
 
-// OAuth redirect
+function saveToken(tok, expiresInSeconds){
+  const expiresAt = Date.now() + (parseInt(expiresInSeconds||"3500",10) * 1000);
+  localStorage.setItem("gmailToken", JSON.stringify({ token: tok, expiresAt }));
+}
+function loadSavedToken(){
+  try{
+    const raw = localStorage.getItem("gmailToken");
+    if(!raw) return null;
+    const data = JSON.parse(raw);
+    if(!data.token || !data.expiresAt) return null;
+    if(Date.now() >= data.expiresAt - 60000) { // expired or about to expire
+      localStorage.removeItem("gmailToken");
+      return null;
+    }
+    return data.token;
+  }catch{ return null; }
+}
+function clearSavedToken(){ localStorage.removeItem("gmailToken"); }
+
+// OAuth redirect (fresh login)
 const hash=new URLSearchParams(window.location.hash.slice(1));
 if(hash.get("access_token")){
   token=hash.get("access_token");
+  saveToken(token, hash.get("expires_in"));
   window.history.replaceState({},document.title,window.location.pathname);
   showConnected();loadThreads();
+} else {
+  // Try to restore a previous session automatically
+  const saved = loadSavedToken();
+  if(saved){
+    token = saved;
+    showConnected();
+    loadThreads();
+  }
 }
 
 function showConnected(){
@@ -206,6 +237,15 @@ document.getElementById("authBtn").onclick=()=>{
   window.location.href=`https://accounts.google.com/o/oauth2/v2/auth?${p}`;
 };
 document.getElementById("refreshBtn").onclick=()=>searchMode?doSearch(searchQuery):loadThreads(false);
+document.getElementById("logoutBtn").onclick=()=>{
+  clearSavedToken();
+  token=null;
+  threads=[]; sel=null; allMsgs=[];
+  document.getElementById("authBtn").style.display="block";
+  document.getElementById("connectedZone").style.display="none";
+  document.getElementById("tlist").innerHTML='<div class="loading">Connectez votre Gmail →</div>';
+  document.getElementById("main").innerHTML='<div class="empty"><div style="font-size:38px">✉️</div><div style="font-size:14px;font-weight:500">Sélectionnez une conversation</div></div>';
+};
 document.getElementById("newBtn").onclick=showCompose;
 
 // Search
@@ -265,6 +305,14 @@ async function switchFolder(folder, el){
 
 async function gFetch(path,opts={}){
   const r=await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/${path}`,{...opts,headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json",...opts.headers}});
+  if(r.status===401){
+    clearSavedToken();
+    token=null;
+    document.getElementById("authBtn").style.display="block";
+    document.getElementById("connectedZone").style.display="none";
+    document.getElementById("tlist").innerHTML='<div class="loading">Session expirée — reconnectez-vous</div>';
+    throw new Error("Token expired");
+  }
   return r.json();
 }
 
