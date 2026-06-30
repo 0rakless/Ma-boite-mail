@@ -110,6 +110,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;ba
 .compose-wrap{flex:1;padding:20px;display:flex;flex-direction:column;gap:10px;overflow:auto}
 .inp{width:100%;padding:10px 14px;border-radius:10px;border:1px solid #EBEBEB;background:#FFF6F1;font-size:13px;color:#1A1612;outline:none;font-family:inherit}
 .loading{padding:30px;text-align:center;color:#8A8A8E;font-size:13px}
+.spin-dot{width:11px;height:11px;border-radius:50%;border:2px solid #E0DEDC;border-top-color:#E8593C;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sent-flash{animation:popIn .25s ease-out;transition:opacity .5s ease, transform .5s ease}
+.sent-flash.fade-out{opacity:0;transform:translateY(-4px)}
+@keyframes popIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
 
 /* SEARCH RESULTS */
 .search-info{padding:8px 12px;font-size:11px;color:#8A8A8E;border-bottom:1px solid #EBEBEB;background:#FFF6F1}
@@ -438,18 +443,44 @@ const EMAIL_SIGNATURE_HTML = `
   <div><a href="mailto:contact@k-li-t.com" style="color:#1A1612;text-decoration:underline">contact@k-li-t.com</a></div>
 </div>`;
 
-function makeRawHtml({to,subject,body}){
+async function makeRawHtml({to,subject,body,files}){
   const bodyHtml = esc(body).replace(/\n/g,"<br>");
   const fullHtml = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#1A1612;white-space:pre-wrap">${bodyHtml}</div>${EMAIL_SIGNATURE_HTML}`;
-  const lines=[
+
+  if(!files||!files.length){
+    const lines=[
+      `To: ${to}`,
+      `Subject: =?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`,
+      "Content-Type: text/html; charset=utf-8",
+      "MIME-Version: 1.0",
+      "",
+      fullHtml
+    ];
+    return btoa(unescape(encodeURIComponent(lines.join("\r\n")))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  }
+
+  const boundary="boundary_"+Date.now().toString(36);
+  let lines=[
     `To: ${to}`,
     `Subject: =?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`,
-    "Content-Type: text/html; charset=utf-8",
     "MIME-Version: 1.0",
-    "",
-    fullHtml
+    `Content-Type: multipart/mixed; boundary="${boundary}"`,
+    "","--"+boundary,
+    "Content-Type: text/html; charset=utf-8","",fullHtml,""
   ];
-  return btoa(unescape(encodeURIComponent(lines.join("\r\n")))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  for(const file of files){
+    const b64=await fileToBase64(file);
+    lines.push("--"+boundary,
+      `Content-Type: ${file.type||"application/octet-stream"}; name="${file.name}"`,
+      "Content-Transfer-Encoding: base64",
+      `Content-Disposition: attachment; filename="${file.name}"`,
+      "",
+      b64.match(/.{1,76}/g).join("\r\n"),
+      "");
+  }
+  lines.push("--"+boundary+"--");
+  const raw=lines.join("\r\n");
+  return btoa(unescape(encodeURIComponent(raw))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
 }
 
 const FOLDER_QUERIES={INBOX:"in:inbox",SENT:"in:sent",DRAFT:"in:drafts",SPAM:"in:spam",TRASH:"in:trash"};
@@ -996,20 +1027,23 @@ async function sendReply(t){
   const inp=document.getElementById("ri"),val=inp.value.trim(),st=document.getElementById("st");
   const files=window._pendingFiles||[];
   if(!val&&!files.length)return;
-  document.getElementById("sendBtn").disabled=true;st.innerHTML=files.length?"Envoi avec pièce(s) jointe(s)…":"";
+  document.getElementById("sendBtn").disabled=true;
+  st.innerHTML='<span style="display:inline-flex;align-items:center;gap:5px;color:#8A8A8E"><span class="spin-dot"></span>Envoi…</span>';
   const last=allMsgs[allMsgs.length-1];
   try{
     const raw=await makeRawWithAttachments({to:t.email,subject:`Re: ${t.subj}`,body:val,replyToMessageId:last?.messageId,files});
     const payload={raw};if(t.threadId)payload.threadId=t.threadId;
     const res=await gFetch("messages/send",{method:"POST",body:JSON.stringify(payload)});
     if(res.id){
-      st.innerHTML='<span style="color:#34C68A">✓ Envoyé !</span>';
       const attMeta=files.map(f=>({filename:f.name,mimeType:f.type,size:f.size}));
       allMsgs.push({mine:true,name:"Moi",body:val,t:new Date().toISOString(),attachments:[]});
       inp.value="";window._pendingFiles=[];renderAttachPreview();renderMsgs(hue(t.name));
       // Ensure thread doesn't get marked unread after replying
       t.unread=false;
       if(t.threadId) markThreadAsRead(t.threadId);
+      st.innerHTML='<span class="sent-flash" style="display:inline-flex;align-items:center;gap:5px;color:#1D9E75;font-weight:600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Envoyé !</span>';
+      setTimeout(()=>{ const el=st.querySelector(".sent-flash"); if(el)el.classList.add("fade-out"); },1200);
+      setTimeout(()=>{ if(st) st.innerHTML=""; },1700);
     }else st.innerHTML='<span style="color:#E05C5C">✗ Erreur</span>';
   }catch{st.innerHTML='<span style="color:#E05C5C">✗ Erreur réseau</span>';}
   document.getElementById("sendBtn").disabled=false;
@@ -1121,33 +1155,70 @@ function showCompose(){
     <input class="inp" id="cTo" placeholder="À (adresse email)">
     <input class="inp" id="cSubj" placeholder="Objet">
     <textarea class="inp" id="cBody" placeholder="Votre message…" style="flex:1;resize:none;padding-top:12px"></textarea>
+    <div id="cAttachPreview" style="display:none;flex-wrap:wrap;gap:6px"></div>
     <div id="scheduleBox" style="display:none"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
       <div style="display:flex;gap:8px">
+        <input type="file" id="cFileInput" multiple style="display:none">
+        <button id="cAttachBtn" title="Joindre un fichier" style="background:#F5F4F0;border:none;border-radius:10px;padding:8px 10px;font-size:11px;font-weight:600;cursor:pointer;color:#E8593C;display:flex;align-items:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
         <button id="cSaveDraftBtn" title="Enregistrer en brouillon" style="background:#F5F4F0;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;cursor:pointer;color:#E8593C;display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Brouillon</button>
         <button id="cScheduleBtn" title="Programmer l'envoi" style="background:#F5F4F0;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;cursor:pointer;color:#E8593C;display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Programmer</button>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <div id="cSt" style="font-size:11px"></div>
-        <button onclick="sendNew()" style="background:#E8593C;color:#fff;border:none;border-radius:10px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer">Envoyer ↑</button>
+        <button id="cSendBtn" onclick="sendNew()" style="background:#E8593C;color:#fff;border:none;border-radius:10px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer">Envoyer ↑</button>
       </div>
     </div>
   </div>`;
   window._selThread=null;
+  window._cPendingFiles=[];
+  document.getElementById("cAttachBtn").onclick=()=>document.getElementById("cFileInput").click();
+  document.getElementById("cFileInput").onchange=e=>{
+    window._cPendingFiles=[...window._cPendingFiles,...Array.from(e.target.files)];
+    renderComposeAttachPreview();
+  };
   document.getElementById("cSaveDraftBtn").onclick=()=>saveAsDraft(null);
   document.getElementById("cScheduleBtn").onclick=()=>toggleScheduleBox(null);
 }
 
+function renderComposeAttachPreview(){
+  const box=document.getElementById("cAttachPreview");
+  if(!box)return;
+  const files=window._cPendingFiles||[];
+  if(!files.length){box.style.display="none";box.innerHTML="";return;}
+  box.style.display="flex";
+  box.innerHTML=files.map((f,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;background:#FDEAE3;color:#E8593C;border-radius:9px;padding:5px 9px;font-size:11px">
+      <span style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name)}</span>
+      <span style="opacity:.6">${fmtSize(f.size)}</span>
+      <button onclick="removeComposePendingFile(${i})" style="background:none;border:none;color:#E8593C;cursor:pointer;font-size:14px;line-height:1;padding:0">×</button>
+    </div>`).join("");
+}
+function removeComposePendingFile(i){
+  window._cPendingFiles.splice(i,1);
+  renderComposeAttachPreview();
+}
+
 async function sendNew(){
   const to=document.getElementById("cTo").value.trim(),subj=document.getElementById("cSubj").value.trim()||"(sans objet)",body=document.getElementById("cBody").value.trim(),st=document.getElementById("cSt");
-  if(!to||!body)return;
-  st.textContent="Envoi…";
+  const files=window._cPendingFiles||[];
+  if(!to||(!body&&!files.length))return;
+  const sendBtn=document.getElementById("cSendBtn");
+  sendBtn.disabled=true;
+  st.innerHTML='<span style="display:inline-flex;align-items:center;gap:5px;color:#8A8A8E"><span class="spin-dot"></span>Envoi…</span>';
   try{
-    const raw=makeRawHtml({to,subject:subj,body});
+    const raw=await makeRawHtml({to,subject:subj,body,files});
     const res=await gFetch("messages/send",{method:"POST",body:JSON.stringify({raw})});
-    if(res.id){st.innerHTML='<span style="color:#34C68A">✓ Envoyé !</span>';document.getElementById("cBody").value="";}
-    else st.innerHTML='<span style="color:#E05C5C">✗ Erreur</span>';
+    if(res.id){
+      document.getElementById("cBody").value="";
+      window._cPendingFiles=[];
+      renderComposeAttachPreview();
+      st.innerHTML='<span class="sent-flash" style="display:inline-flex;align-items:center;gap:5px;color:#1D9E75;font-weight:600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Envoyé !</span>';
+      setTimeout(()=>{ const el=st.querySelector(".sent-flash"); if(el)el.classList.add("fade-out"); },1200);
+      setTimeout(()=>{ if(st) st.innerHTML=""; },1700);
+    }else st.innerHTML='<span style="color:#E05C5C">✗ Erreur</span>';
   }catch{st.innerHTML='<span style="color:#E05C5C">✗ Erreur réseau</span>';}
+  sendBtn.disabled=false;
 }
 // ── Sidebar resize ──
 const sidebar=document.getElementById("sidebar");
