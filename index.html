@@ -50,9 +50,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;ba
 .ti.checked{background:#FFF3E0}
 .ti-check{width:16px;height:16px;border-radius:5px;border:1.5px solid #D5D3D3;flex-shrink:0;margin-top:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#fff}
 .ti-check.checked{background:#E8593C;border-color:#E8593C}
-.bulk-bar{display:none;align-items:center;gap:10px;padding:8px 14px;background:#1A1612;color:#fff;font-size:12px}
+.bulk-bar{display:none;align-items:center;gap:8px;padding:6px 12px;background:#1A1612;color:#fff;font-size:11px;white-space:nowrap}
+.bulk-bar span{white-space:nowrap;flex-shrink:0}
 .bulk-bar.vis{display:flex}
-.bulk-btn{background:#E05C5C;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px}
+.bulk-btn{background:#E05C5C;color:#fff;border:none;border-radius:6px;padding:4px 9px;font-size:10.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;flex-shrink:0}
 .bulk-cancel{background:none;border:none;color:#ABABAB;font-size:11px;cursor:pointer;margin-left:auto}
 .av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
 .ti-info{flex:1;min-width:0}
@@ -534,7 +535,7 @@ function updateBulkBar(){
   const count=selectedThreadIds.size;
   if(count>0){
     bar.classList.add("vis");
-    document.getElementById("bulkCount").textContent=`${count} sélectionné(s)`;
+    document.getElementById("bulkCount").textContent=`${count} sél.`;
   }else{
     bar.classList.remove("vis");
   }
