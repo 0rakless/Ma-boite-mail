@@ -797,13 +797,30 @@ async function openThread(t){
 
 function prettifyBody(txt){
   if(!txt)return txt;
-  // Add a blank line after the greeting line (Bonjour X, / Bonsoir X,)
-  txt=txt.replace(/^((?:Bonjour|Bonsoir|Salut|Cher|Chère|Madame|Monsieur)[^\n]{0,60},?)\n(?!\n)/i,"$1\n\n");
-  // Add a blank line before common sign-off phrases if not already separated
-  const signoffs=/(Bonne journée|Bonne soirée|Cordialement|Bien cordialement|Bien à vous|Bien à toi|Merci d'avance|Sincèrement|À bientôt)/i;
-  txt=txt.replace(new RegExp("([^\\n])\\n("+signoffs.source+")","i"),"$1\n\n$2");
-  txt=txt.replace(/\n{3,}/g,"\n\n");
-  return txt.trim();
+
+  const signoffs="(Bonne journée|Bonne soirée|Bonne fin de journée|Cordialement|Bien cordialement|Bien à vous|Bien à toi|Merci d'avance|Sincèrement|À bientôt|Restant disponible)";
+  const greetings="(Bonjour|Bonsoir|Rebonjour|Salut|Cher|Chère|Madame|Monsieur)";
+
+  // Normalize: collapse runs of 2+ spaces (often used instead of real line breaks) into a paragraph break,
+  // but only if there isn't already a newline structure in the text.
+  const hasNewlines = /\n/.test(txt.trim());
+  if(!hasNewlines){
+    txt = txt.replace(/ {2,}/g, "\n");
+  }
+
+  // Ensure a blank line after the greeting
+  txt=txt.replace(new RegExp("^("+greetings+"[^\\n]{0,60},?)\\n?(?!\\n)","i"),"$1\n\n");
+
+  // Ensure a blank line before sign-off phrases
+  txt=txt.replace(new RegExp("\\n?("+signoffs+")","gi"), "\n\n$1");
+
+  // Put a line break before a phone number / email / company name that follows directly after a name on the same line
+  txt=txt.replace(/([a-zà-öø-ÿ])\s+(\d{2}(?:[\s.]?\d{2}){4})/gi, "$1\n$2"); // phone numbers
+  txt=txt.replace(/([a-zà-öø-ÿ])\s+([\w.+-]+@[\w-]+\.[a-z]{2,})/gi, "$1\n$2"); // emails
+
+  // Collapse excessive blank lines and trim
+  txt=txt.replace(/[ \t]{2,}/g," ").replace(/\n{3,}/g,"\n\n").trim();
+  return txt;
 }
 
 function fileIcon(mime,name){
