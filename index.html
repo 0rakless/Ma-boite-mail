@@ -380,6 +380,11 @@ function renderList(q=""){
     visible=visible.filter(t=>(threadLabels[t.id]||[]).includes(lid));
   }
   if(!visible.length){list.innerHTML='<div class="loading">Aucun email</div>';return;}
+  // Sort: unread first, then by date (most recent first) within each group
+  visible=[...visible].sort((a,b)=>{
+    if(a.unread!==b.unread)return a.unread?-1:1;
+    return new Date(b.time)-new Date(a.time);
+  });
   visible.forEach(t=>{
     const el=document.createElement("div");
     el.className="ti"+(sel?.id===t.id?" on":"")+(t.unread?" unread":"");
