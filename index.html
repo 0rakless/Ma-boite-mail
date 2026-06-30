@@ -677,6 +677,7 @@ async function previewAttachment(messageId,attachmentId,filename,mimeType){
 }
 
 
+function renderMsgs(c){
   const container=document.getElementById("msgs");if(!container)return;
   container.innerHTML="";
   allMsgs.forEach(m=>{
