@@ -522,13 +522,13 @@ async function openThread(t){
   <div class="msgs" id="msgs"><div class="loading">Chargement…</div></div>
   <div class="rbar">
     <div id="attachPreview" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
-    <div id="aiToolbar" style="display:none;gap:6px;margin-bottom:8px"></div>
+    <div id="scheduleBox" style="display:none;margin-bottom:8px"></div>
     <div class="rrow">
       <input type="file" id="fileInput" multiple style="display:none">
       <button id="attachBtn" title="Joindre un fichier" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#5B5FEF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
       <textarea class="rinput" id="ri" placeholder="Répondre… (Entrée pour envoyer)" rows="1"></textarea>
-      <button id="spellBtn" title="Corriger l'orthographe" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#5B5FEF"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></button>
-      <button id="rephraseBtn" title="Reformuler" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#5B5FEF"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg></button>
+      <button id="saveDraftBtn" title="Enregistrer en brouillon" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#5B5FEF"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button>
+      <button id="scheduleBtn" title="Programmer l'envoi" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#5B5FEF"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
       <button class="send-btn" id="sendBtn">↑</button>
     </div>
     <div class="st" id="st"></div>
@@ -540,8 +540,8 @@ async function openThread(t){
     window._pendingFiles=[...window._pendingFiles,...Array.from(e.target.files)];
     renderAttachPreview();
   };
-  document.getElementById("spellBtn").onclick=()=>aiAssist("spell","ri","aiToolbar");
-  document.getElementById("rephraseBtn").onclick=()=>aiAssist("rephrase","ri","aiToolbar");
+  document.getElementById("saveDraftBtn").onclick=()=>saveAsDraft(t);
+  document.getElementById("scheduleBtn").onclick=()=>toggleScheduleBox(t);
 
   window._selThread=t;
   document.getElementById("sumX").onclick=()=>document.getElementById("sumBox").classList.remove("vis");
@@ -733,60 +733,102 @@ async function sendReply(t){
   document.getElementById("sendBtn").disabled=false;
 }
 
-async function aiAssist(mode,inputId,toolbarId){
-  inputId=inputId||"ri";toolbarId=toolbarId||"aiToolbar";
-  const inp=document.getElementById(inputId);
-  const original=inp.value.trim();
-  if(!original){
-    const st=document.getElementById("st")||document.getElementById("cSt");
-    if(st){st.innerHTML='<span style="color:#E05C5C">Écrivez un message d\'abord</span>';setTimeout(()=>{if(st)st.innerHTML="";},2500);}
-    return;
-  }
-  const toolbar=document.getElementById(toolbarId);
-  toolbar.style.display="flex";
-  toolbar.innerHTML=`<div style="font-size:11px;color:#8A8A8E;padding:6px 0">${mode==="spell"?"Correction en cours…":"Reformulation en cours…"}</div>`;
-
-  const sysPrompt=mode==="spell"
-    ? "Tu es un correcteur orthographique et grammatical en français. Corrige UNIQUEMENT les fautes d'orthographe, de grammaire et de ponctuation du texte fourni, sans changer le style, le ton ou le sens. Réponds uniquement avec le texte corrigé, sans aucun commentaire ni guillemets."
-    : "Tu es un assistant de rédaction. Reformule le texte fourni en français pour le rendre plus clair, professionnel et fluide, tout en gardant le même sens et la même intention. Réponds uniquement avec le texte reformulé, sans aucun commentaire ni guillemets.";
-
+// ── Save as draft ──
+async function saveAsDraft(t){
+  const inp=document.getElementById("ri")||document.getElementById("cBody");
+  const body=inp.value.trim();
+  const files=window._pendingFiles||[];
+  if(!body&&!files.length)return;
+  const st=document.getElementById("st")||document.getElementById("cSt");
+  st.innerHTML="Enregistrement…";
   try{
-    const r=await fetch("https://api.anthropic.com/v1/messages",{
-      method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:600,system:sysPrompt,messages:[{role:"user",content:original}]})
-    });
-    const d=await r.json();
-    const result=(d.content?.filter(b=>b.type==="text").map(b=>b.text).join("")||"").trim();
-    if(!result){
-      toolbar.innerHTML=`<div style="font-size:11px;color:#E05C5C;padding:6px 0">Erreur — réessayez</div>`;
-      setTimeout(()=>{toolbar.style.display="none";toolbar.innerHTML="";},2500);
-      return;
+    const to=t?t.email:document.getElementById("cTo")?.value.trim();
+    const subj=t?`Re: ${t.subj}`:(document.getElementById("cSubj")?.value.trim()||"(sans objet)");
+    const raw=await makeRawWithAttachments({to,subject:subj,body,files});
+    const res=await gFetch("drafts",{method:"POST",body:JSON.stringify({message:{raw}})});
+    if(res.id){
+      st.innerHTML='<span style="color:#34C68A">✓ Brouillon enregistré</span>';
+      setTimeout(()=>{if(st)st.innerHTML="";},2500);
+    }else st.innerHTML='<span style="color:#E05C5C">✗ Erreur</span>';
+  }catch(e){st.innerHTML='<span style="color:#E05C5C">✗ Erreur réseau</span>';}
+}
+
+// ── Schedule send ──
+function toggleScheduleBox(t){
+  const box=document.getElementById("scheduleBox");
+  if(box.style.display==="block"){box.style.display="none";box.innerHTML="";return;}
+  const now=new Date();
+  now.setMinutes(now.getMinutes()+5);
+  const dateStr=now.toISOString().slice(0,10);
+  const timeStr=now.toTimeString().slice(0,5);
+  box.style.display="block";
+  box.innerHTML=`
+    <div style="background:#F0EFFF;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:11px;color:#5B5FEF;font-weight:600">Programmer l'envoi :</span>
+      <input type="date" id="schedDate" value="${dateStr}" style="padding:5px 8px;border-radius:7px;border:1px solid #D8D6FA;font-size:12px;outline:none">
+      <input type="time" id="schedTime" value="${timeStr}" style="padding:5px 8px;border-radius:7px;border:1px solid #D8D6FA;font-size:12px;outline:none">
+      <button onclick="confirmSchedule(window._selThread)" style="background:#5B5FEF;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:11px;font-weight:600;cursor:pointer">Programmer</button>
+      <button onclick="document.getElementById('scheduleBox').style.display='none';document.getElementById('scheduleBox').innerHTML=''" style="background:none;border:none;color:#8A8A8E;font-size:11px;cursor:pointer">Annuler</button>
+    </div>`;
+}
+
+function loadScheduled(){
+  try{return JSON.parse(localStorage.getItem("scheduledEmails")||"[]");}catch{return[];}
+}
+function saveScheduled(list){localStorage.setItem("scheduledEmails",JSON.stringify(list));}
+
+async function confirmSchedule(t){
+  const inp=document.getElementById("ri")||document.getElementById("cBody");
+  const body=inp.value.trim();
+  if(!body){alert("Écrivez un message d'abord.");return;}
+  const dateVal=document.getElementById("schedDate").value;
+  const timeVal=document.getElementById("schedTime").value;
+  if(!dateVal||!timeVal)return;
+  const sendAt=new Date(`${dateVal}T${timeVal}:00`);
+  if(sendAt.getTime()<=Date.now()){alert("Choisissez une date/heure dans le futur.");return;}
+
+  const to=t?t.email:document.getElementById("cTo")?.value.trim();
+  const subj=t?`Re: ${t.subj}`:(document.getElementById("cSubj")?.value.trim()||"(sans objet)");
+  if(!to){alert("Destinataire manquant.");return;}
+
+  const last=t&&allMsgs.length?allMsgs[allMsgs.length-1]:null;
+  const list=loadScheduled();
+  list.push({
+    id:"sched_"+Date.now(),
+    to,subject:subj,body,
+    replyToMessageId:last?.messageId||null,
+    threadId:t?t.threadId:null,
+    sendAt:sendAt.toISOString(),
+    sent:false
+  });
+  saveScheduled(list);
+
+  const st=document.getElementById("st")||document.getElementById("cSt");
+  st.innerHTML=`<span style="color:#34C68A">✓ Programmé pour le ${sendAt.toLocaleDateString("fr-FR")} à ${sendAt.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}</span>`;
+  inp.value="";
+  document.getElementById("scheduleBox").style.display="none";
+  document.getElementById("scheduleBox").innerHTML="";
+  checkScheduledEmails();
+}
+
+async function checkScheduledEmails(){
+  if(!token)return;
+  const list=loadScheduled();
+  let changed=false;
+  for(const item of list){
+    if(item.sent)continue;
+    if(new Date(item.sendAt).getTime()<=Date.now()){
+      try{
+        const raw=await makeRaw({to:item.to,subject:item.subject,body:item.body,replyToMessageId:item.replyToMessageId});
+        const payload={raw};if(item.threadId)payload.threadId=item.threadId;
+        const res=await gFetch("messages/send",{method:"POST",body:JSON.stringify(payload)});
+        if(res.id){item.sent=true;changed=true;}
+      }catch(e){}
     }
-    toolbar.innerHTML=`
-      <div style="background:#F0EFFF;border-radius:10px;padding:10px 12px;width:100%">
-        <div style="font-size:9px;color:#5B5FEF;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:6px">${mode==="spell"?"Texte corrigé":"Texte reformulé"}</div>
-        <div style="font-size:13px;color:#1C1C1E;line-height:1.55;white-space:pre-wrap;margin-bottom:8px">${esc(result)}</div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button onclick="dismissAiAssist('${toolbarId}')" style="background:none;border:none;color:#8A8A8E;font-size:11px;font-weight:600;cursor:pointer;padding:5px 10px">Ignorer</button>
-          <button onclick="acceptAiAssist('${inputId}','${toolbarId}')" style="background:#5B5FEF;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;padding:5px 14px">Utiliser ce texte</button>
-        </div>
-      </div>`;
-    window._aiAssistResult=result;
-  }catch(e){
-    toolbar.innerHTML=`<div style="font-size:11px;color:#E05C5C;padding:6px 0">Erreur réseau</div>`;
-    setTimeout(()=>{toolbar.style.display="none";toolbar.innerHTML="";},2500);
   }
+  if(changed)saveScheduled(list);
 }
-function acceptAiAssist(inputId,toolbarId){
-  inputId=inputId||"ri";toolbarId=toolbarId||"aiToolbar";
-  const inp=document.getElementById(inputId);
-  if(inp&&window._aiAssistResult)inp.value=window._aiAssistResult;
-  dismissAiAssist(toolbarId);
-}
-function dismissAiAssist(toolbarId){
-  const toolbar=document.getElementById(toolbarId||"aiToolbar");
-  if(toolbar){toolbar.style.display="none";toolbar.innerHTML="";}
-}
+setInterval(checkScheduledEmails,60000);
 
 async function summarise(){
   const convo=allMsgs.map(m=>`${m.name}: ${m.body}`).join("\n\n");
@@ -808,11 +850,11 @@ function showCompose(){
     <input class="inp" id="cTo" placeholder="À (adresse email)">
     <input class="inp" id="cSubj" placeholder="Objet">
     <textarea class="inp" id="cBody" placeholder="Votre message…" style="flex:1;resize:none;padding-top:12px"></textarea>
-    <div id="cAiToolbar" style="display:none;gap:6px"></div>
+    <div id="scheduleBox" style="display:none"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
       <div style="display:flex;gap:8px">
-        <button id="cSpellBtn" title="Corriger l'orthographe" style="background:#F5F4F0;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;cursor:pointer;color:#5B5FEF;display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Corriger</button>
-        <button id="cRephraseBtn" title="Reformuler" style="background:#F5F4F0;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;cursor:pointer;color:#5B5FEF;display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Reformuler</button>
+        <button id="cSaveDraftBtn" title="Enregistrer en brouillon" style="background:#F5F4F0;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;cursor:pointer;color:#5B5FEF;display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Brouillon</button>
+        <button id="cScheduleBtn" title="Programmer l'envoi" style="background:#F5F4F0;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;cursor:pointer;color:#5B5FEF;display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Programmer</button>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <div id="cSt" style="font-size:11px"></div>
@@ -820,8 +862,9 @@ function showCompose(){
       </div>
     </div>
   </div>`;
-  document.getElementById("cSpellBtn").onclick=()=>aiAssist("spell","cBody","cAiToolbar");
-  document.getElementById("cRephraseBtn").onclick=()=>aiAssist("rephrase","cBody","cAiToolbar");
+  window._selThread=null;
+  document.getElementById("cSaveDraftBtn").onclick=()=>saveAsDraft(null);
+  document.getElementById("cScheduleBtn").onclick=()=>toggleScheduleBox(null);
 }
 
 async function sendNew(){
