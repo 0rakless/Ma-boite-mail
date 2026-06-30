@@ -761,8 +761,17 @@ async function openThread(t){
           return null;
         }
         const plain=findPlain(p);
-        if(plain)return plain;
         const html=findHtml(p);
+        // If the plain-text version looks like one giant run-on line (few/no newlines
+        // relative to its length), prefer the HTML version, which our cleanBody can
+        // properly re-structure using its table/div/paragraph tags.
+        if(plain){
+          const lineCount=(plain.match(/\n/g)||[]).length;
+          const looksUnstructured = plain.length>200 && lineCount<3;
+          if(!looksUnstructured) return plain;
+          if(html) return html;
+          return plain;
+        }
         if(html)return html;
         if(p.body?.data)try{return decodeURIComponent(escape(atob(p.body.data.replace(/-/g,"+").replace(/_/g,"/"))));}catch{return"";}
         return msg.snippet||"";
