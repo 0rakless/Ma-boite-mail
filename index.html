@@ -858,15 +858,18 @@ function renderMsgs(c){
     const w=document.createElement("div");
     w.className="bw "+(m.mine?"mine":"theirs");
     if(!m.mine){const sr=document.createElement("div");sr.className="srow";sr.innerHTML=`<div class="mav" style="background:${c}">${ini(m.name)}</div><span class="sname">${esc(m.name)}</span>`;w.appendChild(sr);}
-    const bub=document.createElement("div");bub.className="bub "+(m.mine?"mine":"theirs");bub.textContent=m.mine?prettifyBody(m.body):m.body;w.appendChild(bub);
+    const bub=document.createElement("div");bub.className="bub "+(m.mine?"mine":"theirs");
+    const textPart=document.createElement("div");
+    textPart.textContent=m.mine?prettifyBody(m.body):m.body;
+    bub.appendChild(textPart);
     if(m.attachments&&m.attachments.length){
       const att=document.createElement("div");
       att.className="att-list";
-      att.style.cssText="display:flex;flex-direction:column;gap:5px;margin-top:6px;max-width:65%";
+      att.style.cssText=`display:flex;flex-direction:column;gap:5px;margin-top:${textPart.textContent.trim()?"8px":"0"}`;
       m.attachments.forEach(a=>{
         const row=document.createElement("div");
-        row.style.cssText=`display:flex;align-items:center;gap:7px;background:${m.mine?'#C84B30':'#E8E8E8'};color:${m.mine?'#fff':'#1A1612'};border-radius:10px;padding:7px 10px;font-size:11px;cursor:pointer`;
-        row.innerHTML=`${fileIcon(a.mimeType,a.filename)}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.filename)}</span><span style="opacity:.7;font-size:10px">${fmtSize(a.size)}</span>`;
+        row.style.cssText=`display:flex;align-items:center;gap:7px;background:${m.mine?'rgba(255,255,255,0.18)':'rgba(255,255,255,0.25)'};color:inherit;border-radius:9px;padding:6px 9px;font-size:11px;cursor:pointer`;
+        row.innerHTML=`${fileIcon(a.mimeType,a.filename)}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.filename)}</span><span style="opacity:.75;font-size:10px">${fmtSize(a.size)}</span>`;
         row.title="Cliquer pour ouvrir, Alt+clic pour télécharger";
         row.onclick=(ev)=>{
           if(ev.altKey)downloadAttachment(m.messageId,a.attachmentId,a.filename,a.mimeType);
@@ -874,8 +877,9 @@ function renderMsgs(c){
         };
         att.appendChild(row);
       });
-      w.appendChild(att);
+      bub.appendChild(att);
     }
+    w.appendChild(bub);
     const bt=document.createElement("div");bt.className="btime";bt.textContent=tlFull(m.t);w.appendChild(bt);
     container.appendChild(w);
   });
