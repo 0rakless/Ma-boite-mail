@@ -429,6 +429,36 @@ function makeRaw({to,subject,body,replyToMessageId}){
   return btoa(unescape(encodeURIComponent(lines.join("\r\n")))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
 }
 
+const EMAIL_SIGNATURE_HTML = `
+<table cellpadding="0" cellspacing="0" style="font-family:Arial,Helvetica,sans-serif;margin-top:24px">
+  <tr>
+    <td style="vertical-align:top;padding-right:18px">
+      <span style="font-size:30px;font-weight:800;color:#2B2D5C;letter-spacing:-1px">K<span style="color:#E07B5C">-li-</span>T<span style="color:#D9D9D9">.</span></span>
+    </td>
+    <td style="border-left:2px solid #E07B5C;padding-left:18px;vertical-align:top">
+      <div style="font-size:15px;font-weight:700;color:#2B2D5C">Cédric Lelong</div>
+      <div style="font-size:13px;font-weight:700;color:#E07B5C;margin-bottom:6px">Dirigeant de la société</div>
+      <div style="font-size:12px;color:#444;margin-top:2px">📱 0659972016</div>
+      <div style="font-size:12px;color:#444;margin-top:2px">📞 0186661193</div>
+      <div style="font-size:12px;color:#444;margin-top:2px">📍 <a href="mailto:contact@k-li-t.com" style="color:#444;text-decoration:underline">contact@k-li-t.com</a></div>
+    </td>
+  </tr>
+</table>`;
+
+function makeRawHtml({to,subject,body}){
+  const bodyHtml = esc(body).replace(/\n/g,"<br>");
+  const fullHtml = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#1A1612;white-space:pre-wrap">${bodyHtml}</div>${EMAIL_SIGNATURE_HTML}`;
+  const lines=[
+    `To: ${to}`,
+    `Subject: =?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`,
+    "Content-Type: text/html; charset=utf-8",
+    "MIME-Version: 1.0",
+    "",
+    fullHtml
+  ];
+  return btoa(unescape(encodeURIComponent(lines.join("\r\n")))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+
 const FOLDER_QUERIES={INBOX:"in:inbox",SENT:"in:sent",DRAFT:"in:drafts",SPAM:"in:spam",TRASH:"in:trash"};
 
 async function loadThreads(append=false){
@@ -1104,7 +1134,7 @@ async function sendNew(){
   if(!to||!body)return;
   st.textContent="Envoi…";
   try{
-    const raw=makeRaw({to,subject:subj,body});
+    const raw=makeRawHtml({to,subject:subj,body});
     const res=await gFetch("messages/send",{method:"POST",body:JSON.stringify({raw})});
     if(res.id){st.innerHTML='<span style="color:#34C68A">✓ Envoyé !</span>';document.getElementById("cBody").value="";}
     else st.innerHTML='<span style="color:#E05C5C">✗ Erreur</span>';
