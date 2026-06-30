@@ -45,16 +45,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;ba
 .ti{display:flex;gap:8px;padding:9px 12px;cursor:pointer;border-left:3px solid transparent;transition:background .1s}
 .ti:hover{background:#F5F4F0}
 .ti.on{background:#EEEFFE;border-left-color:#5B5FEF}
+.ti.unread{background:#F3F2FF;border-left-color:#C9C7F5}
+.ti.unread.on{background:#EEEFFE;border-left-color:#5B5FEF}
 .av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
 .ti-info{flex:1;min-width:0}
 .ti-name{font-size:12px;font-weight:500;color:#1C1C1E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ti-name.u{font-weight:700}
+.ti-name.u{font-weight:700;color:#3730A3}
 .ti-subj{font-size:11px;color:#8A8A8E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ti-subj.u{color:#5B5FEF;font-weight:600}
 .ti-snip{font-size:10px;color:#ABABAB;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
 .ti-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
 .ti-time{font-size:10px;color:#ABABAB}
-.udot{width:6px;height:6px;border-radius:50%;background:#5B5FEF}
+.udot{width:7px;height:7px;border-radius:50%;background:#5B5FEF;box-shadow:0 0 0 2px #EEEFFE}
 .ti-labels{display:flex;gap:3px;flex-wrap:wrap;margin-top:2px}
 .ti-label{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:600}
 .load-more{text-align:center;padding:10px;font-size:11px;color:#5B5FEF;cursor:pointer;font-weight:600}
@@ -92,7 +94,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;ba
 .btime{font-size:10px;color:#ABABAB;margin-top:4px}
 .rbar{padding:10px 20px 12px;background:#fff;border-top:1px solid #EBEBEB;flex-shrink:0}
 .rrow{display:flex;gap:8px;align-items:flex-end}
-.rinput{flex:1;resize:none;padding:9px 13px;border-radius:12px;border:1px solid #EBEBEB;background:#F7F6F3;font-size:13px;color:#1C1C1E;outline:none;min-height:42px;max-height:110px;line-height:1.5;font-family:inherit}
+.rinput{flex:1;resize:vertical;padding:11px 14px;border-radius:14px;border:1px solid #EBEBEB;background:#F7F6F3;font-size:13px;color:#1C1C1E;outline:none;min-height:90px;max-height:340px;line-height:1.55;font-family:inherit}
 .send-btn{background:#5B5FEF;color:#fff;border:none;border-radius:11px;width:40px;height:40px;font-size:17px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .send-btn:disabled{opacity:.4;cursor:default}
 .st{height:16px;margin-top:4px;font-size:11px}
@@ -380,7 +382,7 @@ function renderList(q=""){
   if(!visible.length){list.innerHTML='<div class="loading">Aucun email</div>';return;}
   visible.forEach(t=>{
     const el=document.createElement("div");
-    el.className="ti"+(sel?.id===t.id?" on":"");
+    el.className="ti"+(sel?.id===t.id?" on":"")+(t.unread?" unread":"");
     const c=hue(t.name);
     const tl2=threadLabels[t.id]||[];
     const labelHtml=tl2.map(lid=>{const l=labels.find(x=>x.id===lid);return l?`<span class="ti-label" style="background:${l.color}22;color:${l.color}">${esc(l.name)}</span>`:""}).join("");
@@ -526,7 +528,7 @@ async function openThread(t){
     <div class="rrow">
       <input type="file" id="fileInput" multiple style="display:none">
       <button id="attachBtn" title="Joindre un fichier" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#5B5FEF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
-      <textarea class="rinput" id="ri" placeholder="Répondre…" rows="1"></textarea>
+      <textarea class="rinput" id="ri" placeholder="Répondre…" rows="4"></textarea>
       <button id="saveDraftBtn" title="Enregistrer en brouillon" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#5B5FEF"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button>
       <button id="scheduleBtn" title="Programmer l'envoi" style="background:#F5F4F0;border:none;border-radius:11px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#5B5FEF"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
       <button class="send-btn" id="sendBtn">↑</button>
