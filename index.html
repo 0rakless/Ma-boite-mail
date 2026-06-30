@@ -540,8 +540,8 @@ async function openThread(t){
     window._pendingFiles=[...window._pendingFiles,...Array.from(e.target.files)];
     renderAttachPreview();
   };
-  document.getElementById("spellBtn").onclick=()=>aiAssist("spell");
-  document.getElementById("rephraseBtn").onclick=()=>aiAssist("rephrase");
+  document.getElementById("spellBtn").onclick=()=>aiAssist("spell","ri","aiToolbar");
+  document.getElementById("rephraseBtn").onclick=()=>aiAssist("rephrase","ri","aiToolbar");
 
   window._selThread=t;
   document.getElementById("sumX").onclick=()=>document.getElementById("sumBox").classList.remove("vis");
@@ -733,16 +733,16 @@ async function sendReply(t){
   document.getElementById("sendBtn").disabled=false;
 }
 
-async function aiAssist(mode){
-  const inp=document.getElementById("ri");
+async function aiAssist(mode,inputId,toolbarId){
+  inputId=inputId||"ri";toolbarId=toolbarId||"aiToolbar";
+  const inp=document.getElementById(inputId);
   const original=inp.value.trim();
   if(!original){
-    const st=document.getElementById("st");
-    st.innerHTML='<span style="color:#E05C5C">Écrivez un message d\'abord</span>';
-    setTimeout(()=>{if(st)st.innerHTML="";},2500);
+    const st=document.getElementById("st")||document.getElementById("cSt");
+    if(st){st.innerHTML='<span style="color:#E05C5C">Écrivez un message d\'abord</span>';setTimeout(()=>{if(st)st.innerHTML="";},2500);}
     return;
   }
-  const toolbar=document.getElementById("aiToolbar");
+  const toolbar=document.getElementById(toolbarId);
   toolbar.style.display="flex";
   toolbar.innerHTML=`<div style="font-size:11px;color:#8A8A8E;padding:6px 0">${mode==="spell"?"Correction en cours…":"Reformulation en cours…"}</div>`;
 
@@ -767,8 +767,8 @@ async function aiAssist(mode){
         <div style="font-size:9px;color:#5B5FEF;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:6px">${mode==="spell"?"Texte corrigé":"Texte reformulé"}</div>
         <div style="font-size:13px;color:#1C1C1E;line-height:1.55;white-space:pre-wrap;margin-bottom:8px">${esc(result)}</div>
         <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button onclick="dismissAiAssist()" style="background:none;border:none;color:#8A8A8E;font-size:11px;font-weight:600;cursor:pointer;padding:5px 10px">Ignorer</button>
-          <button onclick="acceptAiAssist()" style="background:#5B5FEF;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;padding:5px 14px">Utiliser ce texte</button>
+          <button onclick="dismissAiAssist('${toolbarId}')" style="background:none;border:none;color:#8A8A8E;font-size:11px;font-weight:600;cursor:pointer;padding:5px 10px">Ignorer</button>
+          <button onclick="acceptAiAssist('${inputId}','${toolbarId}')" style="background:#5B5FEF;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;padding:5px 14px">Utiliser ce texte</button>
         </div>
       </div>`;
     window._aiAssistResult=result;
@@ -777,13 +777,14 @@ async function aiAssist(mode){
     setTimeout(()=>{toolbar.style.display="none";toolbar.innerHTML="";},2500);
   }
 }
-function acceptAiAssist(){
-  const inp=document.getElementById("ri");
+function acceptAiAssist(inputId,toolbarId){
+  inputId=inputId||"ri";toolbarId=toolbarId||"aiToolbar";
+  const inp=document.getElementById(inputId);
   if(inp&&window._aiAssistResult)inp.value=window._aiAssistResult;
-  dismissAiAssist();
+  dismissAiAssist(toolbarId);
 }
-function dismissAiAssist(){
-  const toolbar=document.getElementById("aiToolbar");
+function dismissAiAssist(toolbarId){
+  const toolbar=document.getElementById(toolbarId||"aiToolbar");
   if(toolbar){toolbar.style.display="none";toolbar.innerHTML="";}
 }
 
@@ -807,11 +808,20 @@ function showCompose(){
     <input class="inp" id="cTo" placeholder="À (adresse email)">
     <input class="inp" id="cSubj" placeholder="Objet">
     <textarea class="inp" id="cBody" placeholder="Votre message…" style="flex:1;resize:none;padding-top:12px"></textarea>
-    <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px">
-      <div id="cSt" style="font-size:11px"></div>
-      <button onclick="sendNew()" style="background:#5B5FEF;color:#fff;border:none;border-radius:10px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer">Envoyer ↑</button>
+    <div id="cAiToolbar" style="display:none;gap:6px"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <div style="display:flex;gap:8px">
+        <button id="cSpellBtn" title="Corriger l'orthographe" style="background:#F5F4F0;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;cursor:pointer;color:#5B5FEF;display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Corriger</button>
+        <button id="cRephraseBtn" title="Reformuler" style="background:#F5F4F0;border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:600;cursor:pointer;color:#5B5FEF;display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Reformuler</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="cSt" style="font-size:11px"></div>
+        <button onclick="sendNew()" style="background:#5B5FEF;color:#fff;border:none;border-radius:10px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer">Envoyer ↑</button>
+      </div>
     </div>
   </div>`;
+  document.getElementById("cSpellBtn").onclick=()=>aiAssist("spell","cBody","cAiToolbar");
+  document.getElementById("cRephraseBtn").onclick=()=>aiAssist("rephrase","cBody","cAiToolbar");
 }
 
 async function sendNew(){
