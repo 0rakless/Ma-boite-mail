@@ -804,6 +804,9 @@ async function sendReply(t){
       const attMeta=files.map(f=>({filename:f.name,mimeType:f.type,size:f.size}));
       allMsgs.push({mine:true,name:"Moi",body:val,t:new Date().toISOString(),attachments:[]});
       inp.value="";window._pendingFiles=[];renderAttachPreview();renderMsgs(hue(t.name));
+      // Ensure thread doesn't get marked unread after replying
+      t.unread=false;
+      if(t.threadId) markThreadAsRead(t.threadId);
     }else st.innerHTML='<span style="color:#E05C5C">✗ Erreur</span>';
   }catch{st.innerHTML='<span style="color:#E05C5C">✗ Erreur réseau</span>';}
   document.getElementById("sendBtn").disabled=false;
