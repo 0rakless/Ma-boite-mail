@@ -316,6 +316,22 @@ async function gFetch(path,opts={}){
   return r.json();
 }
 
+async function markThreadAsRead(threadId){
+  if(!threadId)return;
+  try{
+    await gFetch(`threads/${threadId}/modify`,{
+      method:"POST",
+      body:JSON.stringify({removeLabelIds:["UNREAD"]})
+    });
+    // Update inbox unread counter
+    if(curFolder==="INBOX"){
+      const cnt=threads.filter(t=>t.unread).length;
+      const el=document.getElementById("cnt-INBOX");
+      if(el)el.textContent=cnt||"";
+    }
+  }catch(e){}
+}
+
 function fileToBase64(file){
   return new Promise((resolve,reject)=>{
     const r=new FileReader();
@@ -563,7 +579,12 @@ function toggleLabel(tid,lid,row){
 
 // OPEN THREAD
 async function openThread(t){
-  sel=t;t.unread=false;renderList();
+  sel=t;
+  const wasUnread = t.unread;
+  t.unread=false;renderList();
+  if(wasUnread && token){
+    markThreadAsRead(t.threadId);
+  }
   const main=document.getElementById("main"),c=hue(t.name);
   main.innerHTML=`
   <div class="mh">
