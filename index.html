@@ -483,7 +483,7 @@ async function makeRawHtml({to,subject,body,files}){
   return btoa(unescape(encodeURIComponent(raw))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
 }
 
-const FOLDER_QUERIES={INBOX:"in:inbox",SENT:"in:sent",DRAFT:"in:drafts",SPAM:"in:spam",TRASH:"in:trash"};
+const FOLDER_QUERIES={INBOX:"label:INBOX",SENT:"in:sent -in:inbox",DRAFT:"in:drafts",SPAM:"in:spam",TRASH:"in:trash"};
 
 async function loadThreads(append=false){
   if(!token)return;
